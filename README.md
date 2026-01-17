@@ -1,56 +1,100 @@
-# Dynamous Kiro Hackathon Quickstart Template
+# SignLand - Real-Time Sign Language to Speech Web App
 
-🚀 **Your starting point for the Dynamous and Kiro Hackathon** - A comprehensive template with pre-configured Kiro CLI setup, development workflows, and submission guidelines.
+🗣️ **Empowering non-verbal communication through AI** - A privacy-first, real-time gesture recognition app that converts sign language into spoken audio using only a webcam and speakers.
+
+[![Demo Video](https://img.shields.io/badge/Demo-Watch%20Video-red)](https://youtube.com/your-demo-video)
+[![Live Demo](https://img.shields.io/badge/Live-Try%20It-blue)](https://your-amplify-url.amplifyapp.com)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 > **📖 New to Kiro?** Check out [kiro-guide.md](kiro-guide.md) to quickly get accustomed to how Kiro works and understand its unique features for the hackathon.
 
-## About the Hackathon
+## About SignLand
 
-The **Kiro Hackathon** is a coding competition where developers build real-world applications using the Kiro CLI. Show off your AI-powered development skills and compete for **$17,000 in prizes**.
+SignLand is a real-time sign language to speech communication tool that empowers mute and non-verbal individuals to communicate naturally using only their webcam and speakers. The app converts hand gestures and signs into spoken audio instantly, with a strong focus on privacy, low latency, and offline-first operation.
 
-- **📅 Dates**: January 5-23, 2026
-- **💰 Prize Pool**: $17,000 across 10 winners
-- **🎯 Theme**: Open - build anything that solves a real problem
-- **🔗 More Info**: [dynamous.ai/kiro-hackathon](https://dynamous.ai/kiro-hackathon)
+### Key Features
 
-## What's Included
+- **Real-time Gesture Recognition**: MediaPipe-powered hand gesture detection running locally in the browser
+- **Instant Speech Output**: Browser-native text-to-speech for immediate audio feedback
+- **Offline-First Fast Mode**: Complete gesture-to-speech pipeline runs locally without internet
+- **Smart Interpreter Mode**: Optional online mode that refines gesture tokens into natural language using Gemini AI
+- **Privacy-First Design**: No video upload - webcam stream never leaves the device in Fast Mode
+- **Multilingual Support**: Choose output language and voice for speech synthesis
 
-This template provides everything you need to get started:
+### Technology Stack
 
-- **📋 Steering Documents**: Pre-configured project templates (product.md, tech.md, structure.md)
-- **⚡ Custom Prompts**: 11 powerful development workflow prompts
-- **📖 Examples**: Sample README and DEVLOG showing best practices
-- **🏆 Hackathon Tools**: Specialized code review prompt for submission evaluation
+- **Frontend**: Next.js 14+ (App Router) with React 18+ and TypeScript
+- **AI & Computer Vision**: MediaPipe Tasks Vision (WASM) for client-side gesture recognition
+- **Speech**: Web Speech API (SpeechSynthesis) for browser-native text-to-speech
+- **Authentication**: Clerk for user authentication and session management
+- **Optional AI**: Google Gemini API for text refinement in Smart Mode
+- **Deployment**: AWS Amplify with monorepo support
 
 ## Quick Start
 
-### 1. Clone This Template
+### Prerequisites
+
+- **Node.js** 18+ (LTS recommended)
+- **npm** or **pnpm** for package management
+- **Git** for version control
+- **Modern browser** with webcam support (Chrome, Firefox, Safari)
+- **Kiro CLI** installed and authenticated
+
+### 1. Clone and Setup
+
 ```bash
-git clone https://github.com/coleam00/dynamous-kiro-hackathon
+git clone https://github.com/yourusername/dynamous-kiro-hackathon
 cd dynamous-kiro-hackathon
 ```
 
-### 2. Run the Setup Wizard
+### 2. Install Dependencies
+
 ```bash
-@quickstart
+cd web
+npm install
 ```
 
-This assumes you already have Kiro CLI installed and that you started with the `kiro-cli` command in your terminal.
+### 3. Configure Environment
 
-This interactive wizard will:
-- ✅ Fill out your steering documents with project details
-- ✅ Configure your development workflow
-- ✅ Set up Kiro CLI for your specific project
-- ✅ Explain all available prompts and features
+```bash
+cp .env.example .env.local
+```
 
-### 3. Start Building
-Your project is now configured! Use these core prompts:
+Edit `.env.local` with your credentials:
+
+```bash
+# Clerk Authentication (Required)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# Gemini API (Optional - for Smart Mode)
+GEMINI_API_KEY=...
+
+# App Configuration
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+### 4. Run Development Server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### 5. Start Using Kiro CLI
+
+From the project root (not `/web`):
+
+```bash
+kiro-cli
+```
+
+Then use:
 - **`@prime`** - Load project context
 - **`@plan-feature`** - Plan new features
-- **`@execute`** - Implement plans systematically
+- **`@execute`** - Implement plans
 - **`@code-review`** - Review code quality
-
-**Note:** Your typical workflow will be `@prime` → `@plan-feature` → `@execute` → `@code-review`, but feel free to change it however you want. These commands may require additional details (like what feature to plan or which plan file to execute), but Kiro will ask for these parameters after you invoke the command.
 
 ## Development Workflow (Customize this However You Want!)
 

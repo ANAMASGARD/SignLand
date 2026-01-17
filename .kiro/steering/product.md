@@ -1,19 +1,112 @@
 # Product Overview
 
 ## Product Purpose
-[Describe what your product does and why it exists]
+SignLand (SignSpeak) is a real-time sign language to speech communication tool that empowers mute and non-verbal individuals to communicate naturally using only their webcam and speakers. The app converts hand gestures and signs into spoken audio instantly, with a strong focus on privacy, low latency, and offline-first operation. By running gesture recognition locally in the browser using MediaPipe and leveraging the Web Speech API for text-to-speech, SignLand provides immediate, accessible communication without requiring specialized hardware or continuous internet connectivity.
+
+The optional "Smart Interpreter" mode uses Gemini AI to refine rough gesture tokens into natural, polite sentences, bridging the gap between sign language gloss and conversational speech.
 
 ## Target Users
-[Who is your primary audience? What are their needs?]
+
+### Primary Users
+Mute and non-verbal individuals who:
+- Already know basic signs/gestures
+- Need fast, real-time communication in everyday situations (meetings, classrooms, shops, public places)
+- Want to use only a phone/laptop webcam and speakers
+- Value privacy and don't want their video uploaded continuously
+- Need a solution that works with minimal setup and low bandwidth
+
+### Secondary Users
+- **Caregivers**: Need to facilitate communication with non-verbal individuals
+- **Teachers**: Working with non-verbal students in educational settings
+- **Colleagues**: Collaborating with non-verbal team members in professional environments
+- **Customer-facing staff**: Retail, hospitality, and service workers who need to communicate with non-verbal customers
+
+### Accessibility Focus
+People who need communication aids that:
+- Work with minimal technical setup
+- Function in low-bandwidth environments
+- Respect privacy (no continuous video upload)
+- Provide instant feedback without delays
+- Are accessible on common devices (phones, laptops, tablets)
 
 ## Key Features
-[List the main features and capabilities of your product]
+
+### Core Functionality
+- **Real-time Gesture Recognition**: MediaPipe-powered hand gesture detection running locally in the browser
+- **Instant Speech Output**: Browser-native text-to-speech for immediate audio feedback
+- **Offline-First Fast Mode**: Complete gesture-to-speech pipeline runs locally without internet
+- **Smart Interpreter Mode**: Optional online mode that refines gesture tokens into natural language using Gemini AI
+- **Gesture Stabilization**: Intelligent debouncing and time-window consensus to prevent false positives and repeated phrases
+
+### User Experience
+- **One-Click Start**: Simple "Start" button to begin gesture recognition
+- **Live Captions**: On-screen text display of recognized gestures and phrases
+- **Audio Enable Control**: Explicit button to unlock speech synthesis (mobile browser requirement)
+- **Multilingual Support**: Choose output language and voice for speech synthesis
+- **User Authentication**: Clerk-based auth for personalized settings and preferences
+
+### Privacy & Performance
+- **No Video Upload**: Webcam stream never leaves the device in Fast Mode
+- **Token-Only Transmission**: Only text tokens sent to server in Smart Mode (not video)
+- **Low-Latency Local Voices**: Prioritizes local TTS voices to avoid network delays
+- **Mobile-Optimized**: Works on phone browsers with appropriate permission handling
 
 ## Business Objectives
-[What are the main goals and success metrics?]
+
+### Primary Goals
+1. **Accessibility Impact**: Enable real-time communication for non-verbal individuals in everyday situations
+2. **Privacy Leadership**: Demonstrate that powerful AI-assisted communication can respect user privacy
+3. **Performance Excellence**: Achieve sub-second latency from gesture to speech in Fast Mode
+4. **Adoption & Usability**: Create a tool simple enough for immediate use without training
+
+### Success Metrics
+- **Latency**: < 500ms from stable gesture recognition to speech output in Fast Mode
+- **Accuracy**: > 85% gesture recognition accuracy for trained gesture set
+- **Privacy**: Zero video data transmission in Fast Mode (100% local processing)
+- **Usability**: Users can start communicating within 30 seconds of opening the app
+- **Accessibility**: Works on 95%+ of modern mobile and desktop browsers
 
 ## User Journey
-[How do users interact with your product? What's the typical workflow?]
+
+### First-Time User Flow
+1. **Landing**: User arrives at SignLand homepage, sees clear value proposition
+2. **Sign Up/Login**: Quick authentication via Clerk (email, social login)
+3. **Onboarding**: Brief tutorial showing supported gestures and how to use the app
+4. **Permission Grant**: User grants camera and microphone permissions
+5. **Audio Unlock**: User clicks "Enable Audio" to activate speech synthesis
+6. **First Gesture**: User performs a gesture, sees caption, hears speech output
+7. **Mode Selection**: User can toggle between Fast Mode (instant) and Smart Mode (refined)
+
+### Typical Usage Session
+1. **Quick Start**: User opens app, clicks "Start" button
+2. **Gesture Communication**: User performs signs/gestures in front of webcam
+3. **Real-Time Feedback**: App displays captions and speaks recognized phrases
+4. **Mode Switching**: User toggles Smart Mode for more natural phrasing when needed
+5. **Settings Adjustment**: User changes voice, language, or gesture sensitivity as needed
+6. **Session End**: User clicks "Stop" when done, session data saved to preferences
+
+### Advanced User Flow
+1. **Custom Gestures**: User trains or configures custom gesture mappings
+2. **Phrase Library**: User builds frequently-used phrases for quick access
+3. **Multilingual Communication**: User switches output language for different contexts
+4. **Smart Mode Refinement**: User leverages Gemini for context-aware sentence construction
 
 ## Success Criteria
-[How do you measure if the product is successful?]
+
+### Technical Success
+- **Performance**: Consistent sub-500ms latency in Fast Mode
+- **Reliability**: 99%+ uptime for core gesture recognition (client-side)
+- **Compatibility**: Works on Chrome, Safari, Firefox (mobile and desktop)
+- **Privacy**: Zero video transmission in Fast Mode, minimal token transmission in Smart Mode
+
+### User Success
+- **Adoption**: Users return for multiple sessions (retention metric)
+- **Satisfaction**: Positive feedback on speed, accuracy, and ease of use
+- **Communication Effectiveness**: Users successfully communicate in real-world scenarios
+- **Accessibility**: Users with varying technical skills can use the app effectively
+
+### Hackathon Success
+- **Innovation**: Demonstrates novel approach to privacy-preserving real-time communication
+- **Completeness**: Fully functional MVP with both Fast and Smart modes
+- **Documentation**: Clear README, comprehensive DEVLOG, and demo video
+- **Code Quality**: Well-structured, maintainable codebase with appropriate testing
