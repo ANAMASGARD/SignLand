@@ -1,35 +1,212 @@
 # Development Log - SignLand
 
 **Project**: SignLand - Real-Time Sign Language to Speech Web App  
-**Duration**: January 17-23, 2026  
-**Total Time**: ~0 hours (just started!)  
+**Started**: January 17, 2026  
+**Total Time**: ~5 hours  
 
 ## Overview
-Building a privacy-first, real-time sign language to speech communication tool using MediaPipe for gesture recognition and Web Speech API for text-to-speech. The app runs entirely in the browser (Fast Mode) with an optional Smart Mode that uses Gemini AI to refine gesture tokens into natural language.
+Privacy-first sign language to speech app. MediaPipe for gesture recognition, Web Speech API for text-to-speech. Runs entirely in browser (Fast Mode) with optional Gemini AI refinement (Smart Mode).
 
 ---
 
-## Week 1: Foundation & Planning (Jan 17-23)
+## Day 1 - January 17, 2026
 
-### Day 1 (Jan 17) - Project Setup [3h]
-- **18:00-18:30**: Completed Kiro CLI quickstart wizard and filled steering documents
-- **18:30-19:00**: Structured project repository for hackathon submission
-- **19:00-21:00**: Next.js app scaffolding and initial architecture planning
-- **Decision**: Monorepo structure with `/web` for Next.js app, root for hackathon docs
-- **Kiro Usage**: Used `@quickstart` to set up steering documents, `@prime` to load context
+### Session 1: Project Setup (18:00-18:30) [0.5h]
+**What**: Initial project configuration  
+**Done**: 
+- Completed Kiro CLI setup wizard
+- Created steering documents (product, tech, structure)
 
-**Technical Decisions**:
-- **Architecture**: Client-side inference (MediaPipe WASM) + optional server refinement (Gemini)
-- **Fast Mode**: Fully offline - webcam → MediaPipe → stabilizer → TTS
-- **Smart Mode**: Text-only tokens sent to Gemini for natural language refinement
-- **Privacy**: Zero video upload in Fast Mode, only text tokens in Smart Mode
+**Why**: Steering documents provide persistent context for AI assistant throughout development
 
-**Next Steps**:
-- [ ] Set up Next.js app in `/web` folder
-- [ ] Configure Clerk authentication
-- [ ] Implement MediaPipe gesture recognition
-- [ ] Build gesture stabilizer logic
-- [ ] Create TTS integration
+---
+
+### Session 2: Repository Structure (18:30-19:00) [0.5h]
+**What**: Organized project for deployment  
+**Done**:
+- Monorepo layout: root for docs, `/web` for Next.js app
+- Created `amplify.yml` for AWS Amplify deployment
+
+**Decision**: Monorepo structure  
+**Why**: Clean separation between documentation and application code, easier deployment
+
+---
+
+### Session 3: Documentation (19:00-19:30) [0.5h]
+**What**: Project documentation  
+**Done**:
+- Created comprehensive README.md
+- Extracted patterns to KIRO_MEMORY_RULES.md
+- Documented project structure
+
+---
+
+### Session 4: Cleanup (19:30-20:00) [0.5h]
+**What**: Remove template files  
+**Done**:
+- Removed example files (patterns already extracted)
+- Removed redundant documentation
+- Created cleanup documentation
+
+**Why**: Cleaner codebase, easier to navigate
+
+---
+
+### Session 5: Next.js Setup (20:00-21:00) [1h]
+**What**: Initialize web application  
+**Done**:
+- Created Next.js 14 app in `/web` folder
+- Installed Clerk authentication
+- Configured environment variables
+
+**Tech Choices**:
+- ✅ TypeScript - Type safety for complex state
+- ✅ App Router - Modern Next.js pattern
+- ✅ Tailwind CSS - Fast styling
+- ✅ Turbopack - Faster dev server
+- ❌ No `src/` - Cleaner structure
+
+**Why App Router**: Better for our route structure (`(auth)/translate`, `(public)/landing`)
+
+---
+
+### Session 6: Git Setup (21:00-21:30) [0.5h]
+**What**: Repository configuration  
+**Done**:
+- Replaced template remote with personal repo
+- Prepared for initial commit
+
+**Decision**: Replace origin (not upstream)  
+**Why**: Simpler workflow, don't need template updates
+
+---
+
+### Session 7: Documentation Update (21:30-22:00) [0.5h]
+**What**: Document development process  
+**Done**:
+- Updated DEVLOG with timeline
+- Added time tracking
+- Documented decisions and rationale
+
+---
+
+## Technical Decisions
+
+### Architecture
+**Privacy-First Design**
+- No video upload in Fast Mode
+- Only text tokens sent in Smart Mode
+- All processing happens client-side
+
+**Offline-First Approach**
+- Fast Mode works without internet
+- MediaPipe runs in browser (WASM)
+- Web Speech API for local TTS
+
+**Dual-Mode System**
+- Fast Mode: < 500ms latency, instant response
+- Smart Mode: < 2s latency, natural language via Gemini
+
+### Technology Stack
+
+**Frontend**: Next.js 14 + TypeScript + Tailwind CSS  
+**Why**: Modern patterns, type safety, fast styling
+
+**Gesture Recognition**: MediaPipe Tasks Vision (WASM)  
+**Why**: Production-ready, runs in browser, privacy-preserving
+
+**Speech**: Web Speech API (SpeechSynthesis)  
+**Why**: Native browser support, zero latency, offline-capable
+
+**Authentication**: Clerk  
+**Why**: Fast setup, excellent DX, handles edge cases
+
+**Optional AI**: Google Gemini API  
+**Why**: Fast text refinement, generous free tier
+
+### Project Structure
+
+**Monorepo Layout**:
+```
+root/           # Documentation
+└── web/        # Next.js application
+```
+
+**Why**: Clean separation, easy deployment with AWS Amplify
+
+**Next.js Configuration**:
+- App Router (not Pages Router)
+- No `src/` directory
+- TypeScript strict mode
+- Turbopack for faster dev
+
+---
+
+## Challenges & Solutions
+
+**Challenge**: AWS Amplify deployment from subfolder  
+**Solution**: `amplify.yml` with `appRoot: web`
+
+**Challenge**: Clean project structure  
+**Solution**: Monorepo with root for docs, `/web` for app
+
+**Challenge**: Git remote strategy  
+**Solution**: Replaced origin completely (simpler workflow)
+
+---
+
+## Time Breakdown
+
+| Category | Hours | % |
+|----------|-------|---|
+| Planning & Setup | 1.5h | 30% |
+| Documentation | 1.5h | 30% |
+| Next.js Config | 1.0h | 20% |
+| Repository Setup | 0.5h | 10% |
+| Analysis | 0.5h | 10% |
+| **Total** | **5.0h** | **100%** |
+
+---
+
+## Kiro CLI Usage
+
+**Prompts Used**: 3 total
+- `@quickstart` - Initial setup wizard
+- `@prime` - Load project context (2x)
+
+**Time Saved**: ~3 hours
+- Steering document creation: ~1.5h
+- Pattern extraction: ~1h
+- Documentation structure: ~0.5h
+
+**Custom Prompts Ready**: 11 workflow prompts
+- @prime, @plan-feature, @execute, @code-review
+- @code-review-fix, @system-review, @create-prd
+- @execution-report, @rca, @implement-fix
+
+---
+
+## Next Steps
+
+### Immediate (Next 2-3 hours)
+1. Configure Clerk authentication
+2. Create route structure (landing, translate, settings)
+3. Plan MediaPipe integration with `@plan-feature`
+
+### Short-Term (1-2 days)
+1. MediaPipe gesture recognition
+2. Gesture stabilizer (debounce + consensus)
+3. Text-to-speech integration
+4. Basic UI (camera, captions, controls)
+
+### Medium-Term (3-5 days)
+1. Smart Mode with Gemini API
+2. Testing & optimization
+3. Deploy to AWS Amplify
+
+---
+
+**Last Updated**: January 17, 2026 - 22:00 IST
 
 ---
 
