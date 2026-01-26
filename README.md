@@ -82,7 +82,18 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 5. Start Using Kiro CLI
+### 5. Customize 3D Model (Optional)
+
+To replace the hero 3D model:
+
+1. Place your `.glb` file in `web/public/` (e.g., `hero.glb`)
+2. Update the path in `web/components/landing/HeroModel.tsx`:
+   ```typescript
+   const { scene } = useGLTF('/your-model.glb');
+   ```
+3. Adjust scale and position as needed
+
+### 6. Start Using Kiro CLI
 
 From the project root (not `/web`):
 

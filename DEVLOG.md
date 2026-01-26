@@ -2,7 +2,6 @@
 
 **Project**: SignLand - Real-Time Sign Language to Speech Web App  
 **Started**: January 17, 2026  
-**Total Time**: ~5 hours  
 
 ## Overview
 Privacy-first sign language to speech app. MediaPipe for gesture recognition, Web Speech API for text-to-speech. Runs entirely in browser (Fast Mode) with optional Gemini AI refinement (Smart Mode).
@@ -11,7 +10,7 @@ Privacy-first sign language to speech app. MediaPipe for gesture recognition, We
 
 ## Day 1 - January 17, 2026
 
-### Session 1: Project Setup (18:00-18:30) [0.5h]
+### Session 1: Project Setup (18:00-18:30)
 **What**: Initial project configuration  
 **Done**: 
 - Completed Kiro CLI setup wizard
@@ -21,7 +20,7 @@ Privacy-first sign language to speech app. MediaPipe for gesture recognition, We
 
 ---
 
-### Session 2: Repository Structure (18:30-19:00) [0.5h]
+### Session 2: Repository Structure (18:30-19:00)
 **What**: Organized project for deployment  
 **Done**:
 - Monorepo layout: root for docs, `/web` for Next.js app
@@ -32,7 +31,7 @@ Privacy-first sign language to speech app. MediaPipe for gesture recognition, We
 
 ---
 
-### Session 3: Documentation (19:00-19:30) [0.5h]
+### Session 3: Documentation (19:00-19:30)
 **What**: Project documentation  
 **Done**:
 - Created comprehensive README.md
@@ -41,7 +40,7 @@ Privacy-first sign language to speech app. MediaPipe for gesture recognition, We
 
 ---
 
-### Session 4: Cleanup (19:30-20:00) [0.5h]
+### Session 4: Cleanup (19:30-20:00)
 **What**: Remove template files  
 **Done**:
 - Removed example files (patterns already extracted)
@@ -52,10 +51,10 @@ Privacy-first sign language to speech app. MediaPipe for gesture recognition, We
 
 ---
 
-### Session 5: Next.js Setup (20:00-21:00) [1h]
+### Session 5: Next.js Setup (20:00-21:00)
 **What**: Initialize web application  
 **Done**:
-- Created Next.js 14 app in `/web` folder
+- Created Next.js 16 app in `/web` folder
 - Installed Clerk authentication
 - Configured environment variables
 
@@ -70,7 +69,7 @@ Privacy-first sign language to speech app. MediaPipe for gesture recognition, We
 
 ---
 
-### Session 6: Git Setup (21:00-21:30) [0.5h]
+### Session 6: Git Setup (21:00-21:30)
 **What**: Repository configuration  
 **Done**:
 - Replaced template remote with personal repo
@@ -81,12 +80,151 @@ Privacy-first sign language to speech app. MediaPipe for gesture recognition, We
 
 ---
 
-### Session 7: Documentation Update (21:30-22:00) [0.5h]
+### Session 7: Documentation Update (21:30-22:00)
 **What**: Document development process  
 **Done**:
 - Updated DEVLOG with timeline
 - Added time tracking
 - Documented decisions and rationale
+
+---
+
+### Session 8: MediaPipe Installation (22:00-22:30)
+**What**: Install and configure MediaPipe for gesture recognition  
+**Done**:
+- Installed `@mediapipe/tasks-vision` package
+- Installed `copy-webpack-plugin` for WASM files
+- Updated `next.config.ts` to copy WASM files to `/public/wasm`
+- Created MediaPipe initialization code in `lib/mediapipe/`
+
+**Configuration**:
+- WASM files served from `/wasm` path
+- GPU acceleration enabled (falls back to CPU)
+- VIDEO mode for continuous stream processing
+- Detects up to 2 hands simultaneously
+
+**Files Created**:
+- `lib/mediapipe/gestureRecognizer.ts` - Initialize MediaPipe
+- `lib/mediapipe/types.ts` - TypeScript type definitions
+- `lib/mediapipe/index.ts` - Clean exports
+
+**Why MediaPipe**: Production-ready, runs in browser, privacy-preserving (no server upload)
+
+---
+
+### Session 9: Landing Page with 3D Robot (22:30-23:30)
+**What**: Create beautiful landing page with Three.js 3D robot  
+**Done**:
+- Installed Three.js, React Three Fiber, Drei, Framer Motion
+- Created 3D robot model component with animations
+- Built landing page with macOS-style glassmorphism
+- Added interactive 3D scene with lighting and controls
+
+**Libraries Installed**:
+- `three` - 3D graphics library
+- `@react-three/fiber` - React renderer for Three.js
+- `@react-three/drei` - Useful helpers for R3F
+- `framer-motion` - Smooth animations
+
+**Features**:
+- Animated 3D robot model (floating, rotating)
+- Glassmorphism UI with backdrop blur
+- Gradient backgrounds with animated blobs
+- Interactive orbit controls for 3D scene
+- Responsive design with smooth transitions
+
+**Files Created**:
+- `components/RobotModel.tsx` - 3D robot with animations
+- `components/Scene3D.tsx` - Three.js scene setup
+- `app/page.tsx` - Landing page with glass effects
+- `app/globals.css` - Glassmorphism styles
+
+**Why Three.js**: Industry-standard 3D library, great performance, React integration
+
+---
+
+### Session 10: Fix Next.js 16 Turbopack Configuration (23:30-23:45)
+**What**: Fix Turbopack compatibility issues  
+**Done**:
+- Removed webpack config (not compatible with Turbopack)
+- Added empty turbopack config to silence warnings
+- Created script to copy MediaPipe WASM files
+- Updated package.json scripts to auto-copy WASM files
+
+**Solution**:
+- WASM files manually copied to `public/wasm`
+- Script `scripts/copy-wasm.sh` runs before dev/build
+- Turbopack now works without errors
+
+**Why**: Next.js 16 uses Turbopack by default, webpack configs need migration
+
+---
+
+### Session 11: Premium Landing Page Redesign (23:45-01:00)
+**What**: Redesign landing page with premium 3D hero layout  
+**Done**:
+- Created clean two-column hero layout (3D left, content right)
+- Removed heavy purple background, added subtle pastel gradients
+- Built modular component structure for landing page
+- Added smooth entrance animations with Framer Motion
+- Implemented features section below the fold
+- Added navigation with proper links
+
+**Components Created**:
+- `components/landing/Hero.tsx` - Main hero section
+- `components/landing/HeroScene.tsx` - 3D canvas setup
+- `components/landing/HeroModel.tsx` - Animated 3D robot
+- `components/landing/FeaturePills.tsx` - Feature list
+- `components/landing/FeaturesSection.tsx` - Below fold content
+- `lib/ui/motion.ts` - Shared animation variants
+
+**Design Changes**:
+- White/pastel gradient background (clean, accessible)
+- Removed male/female toggle (not relevant to SignLand)
+- Added proper navigation (How it works, Demo, Docs, Sign in)
+- Feature pills with icons and descriptions
+- Two CTA buttons (Start translating, Watch demo)
+- Subtle 3D model animations (rotate + float)
+- Respects prefers-reduced-motion
+
+**Why**: Premium, professional look that showcases the product clearly
+
+---
+
+### Session 12: Premium Agency-Level Redesign (01:00-02:00)
+**What**: Complete redesign to match reference aesthetic  
+**Done**:
+- Implemented premium typography system (Manrope + Inter)
+- Added subtle noise texture overlay for richness
+- Created pearl/white gradient background (no purple)
+- Built 12-column grid layout (3D left, content right)
+- Premium glassmorphism on feature pills
+- Soft lighting setup for 3D model
+- Reduced motion support throughout
+
+**Typography System**:
+- Headings: Manrope (300 weight, tight tracking)
+- Body: Inter (18px, 1.6 line-height)
+- H1: clamp(44px, 5vw, 76px) with 1.05 line-height
+
+**Design Tokens**:
+- Background: linear-gradient(135deg, #FFFFFF → #F7F7FF → #EEF6FF)
+- Glassmorphism: rgba(255,255,255,0.45) + blur(14px)
+- Subtle shadows and borders
+- Noise overlay at 0.08 opacity
+
+**3D Improvements**:
+- Softer lighting (key + rim + fill)
+- Subtle animations (rotate + float + breathe)
+- No orbit controls on landing
+- Reduced motion support
+
+**Files Created**:
+- `lib/design/tokens.ts` - Design system constants
+- `components/landing/NoiseOverlay.tsx` - Premium texture
+- Updated all landing components with new styling
+
+**Why**: Agency-level polish, medical-tech premium vibe, accessible
 
 ---
 
@@ -109,7 +247,7 @@ Privacy-first sign language to speech app. MediaPipe for gesture recognition, We
 
 ### Technology Stack
 
-**Frontend**: Next.js 14 + TypeScript + Tailwind CSS  
+**Frontend**: Next.js 16 + TypeScript + Tailwind CSS  
 **Why**: Modern patterns, type safety, fast styling
 
 **Gesture Recognition**: MediaPipe Tasks Vision (WASM)  
@@ -159,12 +297,13 @@ root/           # Documentation
 
 | Category | Hours | % |
 |----------|-------|---|
-| Planning & Setup | 1.5h | 30% |
-| Documentation | 1.5h | 30% |
-| Next.js Config | 1.0h | 20% |
-| Repository Setup | 0.5h | 10% |
-| Analysis | 0.5h | 10% |
-| **Total** | **5.0h** | **100%** |
+| Planning & Setup | 1.5h | 27% |
+| Documentation | 1.5h | 27% |
+| Next.js Config | 1.0h | 18% |
+| MediaPipe Setup | 0.5h | 9% |
+| Repository Setup | 0.5h | 9% |
+| Analysis | 0.5h | 9% |
+| **Total** | **5.5h** | **100%** |
 
 ---
 
@@ -206,7 +345,7 @@ root/           # Documentation
 
 ---
 
-**Last Updated**: January 17, 2026 - 22:00 IST
+**Last Updated**: January 17, 2026 - 22:30 IST
 
 ---
 
