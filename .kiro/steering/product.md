@@ -116,6 +116,7 @@ People who need communication aids that:
 ### ✅ Completed Features
 - **Authentication System**: Full Clerk integration with attractive sign-in/sign-up pages
 - **Landing Page**: Hero section with 3D robot animation, gradient backgrounds, and feature highlights
+- **macOS-Style UI**: Glassmorphism effects on buttons (Get Started, Start Experience) with Big Sur/Monterey aesthetic
 - **Protected Routes**: `/translate` route secured with Clerk middleware (proxy.ts for Next.js 16)
 - **User Management**: Profile management with UserButton component and session handling
 - **Sign-In Page**: Beautiful gradient design with feature showcases and responsive layout
@@ -135,3 +136,15 @@ People who need communication aids that:
 - **Gesture Library**: Custom gesture mapping and training
 - **Onboarding Flow**: Tutorial for first-time users
 - **Analytics Dashboard**: Usage statistics and performance metrics
+
+## Development Workflow
+
+### Kiro CLI Usage
+This project leverages Kiro CLI extensively for development:
+
+- **`/paste` command**: Used for sharing screenshots and visual references to implement UI features (e.g., macOS-style glassmorphism buttons, iridescent button effects)
+- **Custom prompts**: `@prime`, `@plan-feature`, `@execute`, `@code-review` for structured development
+- **Steering documents**: Maintained in `.kiro/steering/` for project context and technical decisions
+- **Real-time collaboration**: Kiro CLI enables rapid iteration on UI/UX by processing visual references and implementing designs instantly
+- **Code generation**: Automated component creation (GlassButton, interactive effects) with best practices built-in
+- **Font system updates**: System-wide typography changes (San Francisco font) applied consistently across all components

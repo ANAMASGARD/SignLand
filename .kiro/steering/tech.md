@@ -245,3 +245,58 @@ npm start
 - **Microphone permissions** for audio output (mobile requirement)
 - **CORS configuration** for API routes
 - **XSS prevention** through React's built-in escaping
+
+## Kiro CLI Development Workflow
+
+### How Kiro CLI Accelerates Development
+
+This project demonstrates extensive use of Kiro CLI for rapid, high-quality development:
+
+#### 1. **Visual Design Implementation**
+- **`/paste` command**: Share screenshots of desired UI elements
+- **Instant implementation**: Kiro analyzes visual references and generates matching code
+- **Example**: Glass morphism buttons with iridescent effects implemented from reference images
+- **Benefit**: No need to manually translate design specs to CSS
+
+#### 2. **Component Generation**
+- **Automated creation**: Interactive components (GlassButton) with best practices
+- **Framework integration**: Proper TypeScript types, Framer Motion animations, accessibility
+- **Consistent patterns**: All components follow project conventions automatically
+
+#### 3. **System-Wide Updates**
+- **Font system changes**: San Francisco font applied across entire codebase in minutes
+- **Global styling**: CSS variables and theme updates propagated consistently
+- **Refactoring**: Large-scale changes executed safely with context awareness
+
+#### 4. **Context-Aware Development**
+- **Steering documents**: Project context loaded via `@prime` prompt
+- **Consistent decisions**: Technical choices aligned with architecture docs
+- **No context loss**: Every session starts with full project understanding
+
+#### 5. **Dependency Management**
+- **Smart installations**: Kiro installs required packages (Aceternity UI, clsx, tailwind-merge)
+- **Configuration**: Automatic setup of utilities and helper functions
+- **Integration**: Seamless connection of new libraries with existing code
+
+#### 6. **Documentation Maintenance**
+- **Real-time updates**: Steering documents updated as features are built
+- **Git workflow**: Proper commit messages generated with context
+- **Process tracking**: Development decisions documented automatically
+
+### Kiro CLI Commands Used
+
+- **`@prime`**: Load project context at session start
+- **`/paste`**: Share visual references for UI implementation
+- **File operations**: Read, write, and update multiple files simultaneously
+- **Package management**: Install dependencies and configure tools
+- **Git operations**: Status checks and commit preparation
+
+### Development Speed Impact
+
+**Traditional approach**: Hours to implement glass morphism buttons with interactive effects
+**With Kiro CLI**: Minutes from visual reference to working, animated components
+
+**Traditional approach**: Manual font updates across dozens of files, risk of inconsistency
+**With Kiro CLI**: System-wide font change in seconds, guaranteed consistency
+
+This workflow demonstrates how Kiro CLI transforms development from manual coding to collaborative design implementation.

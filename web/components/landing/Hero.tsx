@@ -4,6 +4,7 @@ import { useRef, useLayoutEffect, useState, useEffect } from 'react';
 import Link from 'next/link';
 import gsap from 'gsap';
 import { HeroScene } from './HeroScene';
+import { GlassButton } from '../ui/GlassButton';
 
 export function LandingHero() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -111,30 +112,28 @@ export function LandingHero() {
             <span className="text-3xl">🗣️</span>
             <span
               className="text-xl font-semibold text-gray-800"
-              style={{ fontFamily: 'var(--font-manrope)' }}
+              style={{ fontFamily: 'var(--font-sf)' }}
             >
               SignLand
             </span>
           </div>
           <div className="hidden md:flex items-center gap-6">
-            <Link href="#how" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+            <Link href="#how" className="text-sm text-gray-600 hover:text-gray-900 transition-colors" style={{ fontFamily: 'var(--font-sf)' }}>
               How it works
             </Link>
-            <Link href="#demo" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+            <Link href="#demo" className="text-sm text-gray-600 hover:text-gray-900 transition-colors" style={{ fontFamily: 'var(--font-sf)' }}>
               Demo
             </Link>
             <Link
               href="/sign-in"
               className="px-5 py-2 rounded-full text-sm font-medium text-gray-700 hover:text-gray-900 transition-all"
+              style={{ fontFamily: 'var(--font-sf)' }}
             >
               Sign in
             </Link>
-            <Link
-              href="/sign-up"
-              className="px-5 py-2 rounded-full text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:shadow-lg transition-all"
-            >
+            <GlassButton href="/sign-up" size="sm">
               Get Started
-            </Link>
+            </GlassButton>
           </div>
         </div>
       </nav>
@@ -163,7 +162,7 @@ export function LandingHero() {
             <h1
               className="leading-[1.0] tracking-tight mb-8"
               style={{
-                fontFamily: 'var(--font-manrope)',
+                fontFamily: 'var(--font-sf)',
                 fontSize: 'clamp(40px, 5vw, 72px)',
                 fontWeight: '300',
                 color: 'rgba(255, 255, 255, 0.9)',
@@ -202,6 +201,7 @@ export function LandingHero() {
                   <span
                     className="text-sm font-medium tracking-wide"
                     style={{
+                      fontFamily: 'var(--font-sf)',
                       color: 'rgba(255, 255, 255, 0.9)',
                       textShadow: '0 1px 10px rgba(0,0,0,0.1)',
                     }}
@@ -212,23 +212,12 @@ export function LandingHero() {
               ))}
             </div>
 
-            {/* Glass CTA Button - frosted effect exactly like reference */}
-            <Link href="/translate">
-              <button
-                ref={ctaRef}
-                className="px-12 py-4 rounded-full font-medium transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:scale-105"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.8)',
-                  backdropFilter: 'blur(20px)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1)',
-                  border: '1px solid rgba(255, 255, 255, 0.5)',
-                  color: '#4a4a8a',
-                  fontSize: '16px',
-                }}
-              >
+            {/* Glass CTA Button - Interactive with Aceternity-style effects */}
+            <div ref={ctaRef} style={{ opacity: 0 }}>
+              <GlassButton href="/translate" size="lg">
                 Start Experience
-              </button>
-            </Link>
+              </GlassButton>
+            </div>
           </div>
         </div>
       </div>

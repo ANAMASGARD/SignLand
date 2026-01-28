@@ -224,6 +224,7 @@ These examples show the level of detail and professionalism expected for hackath
 ### Development Best Practices
 - **Start with `@quickstart`** to set up your foundation properly
 - **Use `@prime`** at the start of every new conversation to quickly catch the coding assistant up to speed on what has been built in the project already
+- **Use `/paste`** to share screenshots and visual references for UI implementation
 - **Update your DEVLOG.md** continuously, not just at the end
 - **Customize your `.kiro/` configuration** as you learn your workflow
 - **Run `@code-review-hackathon`** periodically to compare your project against the judging rubric and before submitting
