@@ -24,7 +24,7 @@ export async function initializeGestureRecognizer(): Promise<GestureRecognizer> 
   // Create gesture recognizer
   gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
     baseOptions: {
-      modelAssetPath: '/wasm/gesture_recognizer.task',
+      modelAssetPath: 'https://storage.googleapis.com/mediapipe-tasks/gesture_recognizer/gesture_recognizer.task',
       delegate: 'GPU', // Use GPU acceleration if available
     },
     runningMode: 'VIDEO', // For continuous video stream

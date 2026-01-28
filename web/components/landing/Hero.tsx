@@ -10,7 +10,7 @@ export function LandingHero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const robotContainerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLButtonElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
