@@ -55,20 +55,25 @@ Natural Language Response → SpeechSynthesis
 ```
 /web (Next.js App)
 ├── app/
-│   ├── (auth)/          # Protected routes with Clerk
-│   ├── translate/       # Main gesture recognition interface
-│   ├── settings/        # User preferences and voice selection
-│   └── api/
-│       └── refine/      # Gemini text refinement endpoint
+│   ├── sign-in/         # Clerk sign-in page
+│   ├── sign-up/         # Clerk sign-up page
+│   ├── translate/       # Protected: Main gesture recognition interface
+│   ├── api/
+│   │   └── refine/      # Gemini text refinement endpoint
+│   ├── layout.tsx       # Root layout with ClerkProvider
+│   └── page.tsx         # Landing page with hero
 ├── components/
-│   ├── GestureRecognizer/   # MediaPipe integration
-│   ├── SpeechOutput/        # TTS management
-│   ├── Stabilizer/          # Gesture stabilization logic
-│   └── CaptionDisplay/      # Real-time caption UI
+│   ├── landing/         # Landing page components (Hero, HeroScene, etc.)
+│   ├── GestureRecognizer/   # MediaPipe integration (planned)
+│   ├── SpeechOutput/        # TTS management (planned)
+│   ├── Stabilizer/          # Gesture stabilization logic (planned)
+│   └── CaptionDisplay/      # Real-time caption UI (planned)
 └── lib/
     ├── mediapipe/       # MediaPipe configuration
-    ├── speech/          # Speech synthesis utilities
-    └── gemini/          # Gemini API client
+    ├── design/          # Design tokens and utilities
+    ├── ui/              # UI utilities (motion, etc.)
+    ├── speech/          # Speech synthesis utilities (planned)
+    └── gemini/          # Gemini API client (planned)
 ```
 
 ## Development Environment
@@ -99,6 +104,10 @@ npm run dev
 ### Environment Variables
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk public key
 - `CLERK_SECRET_KEY` - Clerk secret key (server-side)
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL` - Sign-in page URL (/sign-in)
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL` - Sign-up page URL (/sign-up)
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` - Redirect after sign-in (/translate)
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` - Redirect after sign-up (/translate)
 - `GEMINI_API_KEY` - Google Gemini API key (optional, for Smart Mode)
 
 ## Code Standards

@@ -116,7 +116,7 @@ export function LandingHero() {
               SignLand
             </span>
           </div>
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             <Link href="#how" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
               How it works
             </Link>
@@ -125,9 +125,15 @@ export function LandingHero() {
             </Link>
             <Link
               href="/sign-in"
-              className="px-5 py-2 rounded-full text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 transition-all"
+              className="px-5 py-2 rounded-full text-sm font-medium text-gray-700 hover:text-gray-900 transition-all"
             >
               Sign in
+            </Link>
+            <Link
+              href="/sign-up"
+              className="px-5 py-2 rounded-full text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:shadow-lg transition-all"
+            >
+              Get Started
             </Link>
           </div>
         </div>
@@ -137,7 +143,7 @@ export function LandingHero() {
       <div className="relative z-10 h-full flex items-center">
         <div className="w-full h-full flex flex-col lg:flex-row items-center px-8 lg:px-16">
 
-          {/* Left: 3D Robot - Properly sized container with padding for full visibility */}
+          {/* Left: 3D Robot - Same as before */}
           <div
             ref={robotContainerRef}
             className="w-full lg:w-[55%] h-[45vh] lg:h-[70vh] relative flex items-center justify-center"
@@ -148,47 +154,79 @@ export function LandingHero() {
             </div>
           </div>
 
-          {/* Right: Minimal Text Content */}
+          {/* Right: Glass UI Text Content - Matching reference screenshot */}
           <div
             ref={textRef}
             className="w-full lg:w-[45%] flex flex-col justify-center lg:pl-8"
           >
+            {/* Main heading - White text with glass effect like reference */}
             <h1
-              className="text-gray-900 leading-[1.1] tracking-tight mb-4"
+              className="leading-[1.0] tracking-tight mb-8"
               style={{
                 fontFamily: 'var(--font-manrope)',
-                fontSize: 'clamp(32px, 4vw, 52px)',
+                fontSize: 'clamp(40px, 5vw, 72px)',
                 fontWeight: '300',
+                color: 'rgba(255, 255, 255, 0.9)',
+                textShadow: '0 4px 30px rgba(0,0,0,0.1)',
+                letterSpacing: '-0.02em',
               }}
             >
               Real-Time<br />
-              <span className="font-semibold">Sign Language</span>
+              Sign Language
             </h1>
 
-            <p className="text-gray-600 text-base leading-relaxed mb-6 max-w-sm">
-              AI-powered gesture recognition
-            </p>
+            {/* Feature pills with glass morphism - exactly like reference */}
+            <div className="flex flex-col gap-4 mb-10">
+              {[
+                { label: 'High Quality Recognition' },
+                { label: 'Proprietary Technology' },
+                { label: 'AI-Powered System' },
+                { label: 'Advanced Software' },
+              ].map((feature, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3"
+                >
+                  {/* Glass circle icon */}
+                  <span
+                    className="w-7 h-7 flex items-center justify-center rounded-full text-sm"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.25)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                      color: 'rgba(255, 255, 255, 0.9)',
+                    }}
+                  >
+                    ✧
+                  </span>
+                  <span
+                    className="text-sm font-medium tracking-wide"
+                    style={{
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      textShadow: '0 1px 10px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    {feature.label}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-            {/* CTA Button */}
+            {/* Glass CTA Button - frosted effect exactly like reference */}
             <Link href="/translate">
               <button
                 ref={ctaRef}
-                className="group px-8 py-3 rounded-full font-medium text-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
+                className="px-12 py-4 rounded-full font-medium transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:scale-105"
                 style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(20px)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1)',
+                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                  color: '#4a4a8a',
+                  fontSize: '16px',
                 }}
               >
-                <span className="flex items-center gap-2">
-                  Start
-                  <svg
-                    className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </span>
+                Start Experience
               </button>
             </Link>
           </div>

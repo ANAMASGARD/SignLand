@@ -9,8 +9,8 @@ export function HeroScene() {
   return (
     <div className="w-full h-full cursor-grab active:cursor-grabbing">
       <Canvas frameloop="always" dpr={[1, 2]}>
-        {/* Camera positioned to see the full robot */}
-        <PerspectiveCamera makeDefault position={[0, 0, 4.5]} fov={50} />
+        {/* Camera raised and pulled back to see full robot with floating */}
+        <PerspectiveCamera makeDefault position={[0, 0.5, 5]} fov={45} />
 
         {/* OrbitControls for user interaction - works with mouse & touch */}
         <OrbitControls
@@ -19,7 +19,6 @@ export function HeroScene() {
           minPolarAngle={Math.PI / 4}
           maxPolarAngle={Math.PI / 1.5}
           rotateSpeed={0.5}
-        // Touch support is enabled by default
         />
 
         {/* Lighting */}

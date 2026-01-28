@@ -18,17 +18,28 @@ export function HeroModel() {
   useFrame((state) => {
     if (!groupRef.current || prefersReducedMotion) return;
 
-    // Gentle floating motion only (no auto-rotation since user controls it)
-    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.05;
+    const time = state.clock.elapsedTime;
 
-    // Micro breathing scale
-    const breathe = 1 + Math.sin(state.clock.elapsedTime * 0.6) * 0.01;
-    groupRef.current.scale.setScalar(breathe * 1.6);
+    // Smooth floating up and down motion (reduced amplitude to stay in bounds)
+    const floatY = Math.sin(time * 0.8) * 0.08;
+    groupRef.current.position.y = floatY;
+
+    // Subtle side-to-side sway
+    const swayX = Math.sin(time * 0.5) * 0.02;
+    groupRef.current.position.x = swayX;
+
+    // Gentle tilt/rotation for more life
+    groupRef.current.rotation.z = Math.sin(time * 0.6) * 0.015;
+    groupRef.current.rotation.x = Math.sin(time * 0.4) * 0.01;
+
+    // Breathing scale effect
+    const breathe = 1 + Math.sin(time * 0.7) * 0.01;
+    groupRef.current.scale.setScalar(breathe * 1.4);
   });
 
   return (
-    <group ref={groupRef} position={[0, -0.2, 0]}>
-      <primitive object={scene} scale={1.6} />
+    <group ref={groupRef} position={[0, 0.3, 0]}>
+      <primitive object={scene} scale={1.4} />
     </group>
   );
 }
