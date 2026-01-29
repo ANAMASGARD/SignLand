@@ -19,7 +19,7 @@ import { SmartModeToggle } from '@/components/SmartModeToggle';
 import { SmartModeResult } from '@/components/SmartModeResult';
 import type { GestureRecognizerResult, NormalizedLandmark } from '@mediapipe/tasks-vision';
 
-export function GestureRecognizer() {
+export function GestureRecognizer({ isDark = false }: { isDark?: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -40,6 +40,7 @@ export function GestureRecognizer() {
   const [lastSpokenGesture, setLastSpokenGesture] = useState<string | null>(null);
   const [currentPhrase, setCurrentPhrase] = useState<string>('');
   const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const [audioMuted, setAudioMuted] = useState(false);
   
   // Multilingual support
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en-US');
@@ -48,6 +49,25 @@ export function GestureRecognizer() {
   const [smartModeEnabled, setSmartModeEnabled] = useState<boolean>(false);
   const [isRefining, setIsRefining] = useState<boolean>(false);
   const [lastRefinement, setLastRefinement] = useState<{ original: string; refined: string } | null>(null);
+
+  // Theme colors
+  const theme = {
+    card: isDark ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+    cardBorder: isDark ? 'rgba(148, 163, 184, 0.2)' : 'rgba(229, 231, 235, 0.5)',
+    text: isDark ? '#f1f5f9' : '#1f2937',
+    textMuted: isDark ? '#94a3b8' : '#6b7280',
+    textLight: isDark ? '#cbd5e1' : '#9ca3af',
+    badge: isDark ? '#312e81' : '#ede9fe',
+    badgeText: isDark ? '#c4b5fd' : '#7c3aed',
+    success: isDark ? '#065f46' : '#d1fae5',
+    successText: isDark ? '#6ee7b7' : '#059669',
+    error: isDark ? '#7f1d1d' : '#fee2e2',
+    errorText: isDark ? '#fca5a5' : '#dc2626',
+    button: isDark ? '#1e293b' : '#ffffff',
+    buttonHover: isDark ? '#334155' : '#f3f4f6',
+    border: isDark ? '#334155' : '#e5e7eb',
+    scrollbarTrack: isDark ? '#1e293b' : '#f3f4f6',
+  };
   
   // AI Vision Mode for ASL detection
   const [useAIVision, setUseAIVision] = useState<boolean>(false); // Default OFF - user can enable
@@ -61,13 +81,20 @@ export function GestureRecognizer() {
   const [currentControlGesture, setCurrentControlGesture] = useState<string | null>(null);
   const [detectedLetter, setDetectedLetter] = useState<string>('');
   const [letterHistory, setLetterHistory] = useState<string[]>([]);
-  const [detectionMode, setDetectionMode] = useState<'gesture' | 'letter'>('letter');
+  const [detectionMode, setDetectionMode] = useState<'gesture' | 'letter'>('gesture');
   const [predictions, setPredictions] = useState<Array<{ word: string; confidence: number }>>([]);
   const [lastLetterTime, setLastLetterTime] = useState<number>(Date.now());
   const [showCommitSuccess, setShowCommitSuccess] = useState(false);
   
   // Letter stabilization buffer (last 5 detections)
   const letterBufferRef = useRef<Array<{ letter: string; confidence: number }>>([]);
+
+  // Speak wrapper that checks mute state
+  const speakIfNotMuted = (text: string, options?: any) => {
+    if (!audioMuted && audioUnlocked) {
+      speak(text, options);
+    }
+  };
 
   const lastFrameTimeRef = useRef<number>(0);
   const frameCountRef = useRef<number>(0);
@@ -99,7 +126,7 @@ export function GestureRecognizer() {
         // Show the AI refinement visually
         setLastRefinement({ original: originalTokens, refined: refinedText });
         
-        speak(refinedText, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
+        speakIfNotMuted(refinedText, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
         setSentenceBuffer(prev => [...prev, wordBuffer]);
         trackWordUsage(wordBuffer, false);
         playWhoosh();
@@ -111,7 +138,7 @@ export function GestureRecognizer() {
         console.error('Smart Mode error:', error);
         // Fallback to regular mode
         const translatedWord = translateWord(wordBuffer, selectedLanguage);
-        speak(translatedWord, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
+        speakIfNotMuted(translatedWord, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
         setCurrentPhrase(`⚠️ ${translatedWord} (fallback)`);
         setLastRefinement(null);
       } finally {
@@ -120,7 +147,7 @@ export function GestureRecognizer() {
     } else {
       // Fast Mode: Direct translation
       const translatedWord = translateWord(wordBuffer, selectedLanguage);
-      speak(translatedWord, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
+      speakIfNotMuted(translatedWord, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
       setSentenceBuffer(prev => [...prev, wordBuffer]);
       trackWordUsage(wordBuffer, false);
       playWhoosh();
@@ -282,7 +309,9 @@ export function GestureRecognizer() {
     // Speak a silent utterance to unlock audio on mobile browsers
     const utterance = new SpeechSynthesisUtterance('');
     utterance.volume = 0;
-    speechSynthesis.speak(utterance);
+    if (!audioMuted && audioUnlocked) {
+      speechSynthesis.speak(utterance);
+    }
     setAudioUnlocked(true);
     console.log('Audio unlocked');
   };
@@ -354,7 +383,7 @@ export function GestureRecognizer() {
       // Handle completed control gestures
       if (controlResult.gesture === 'SPACE' && controlResult.holdProgress >= 1) {
         if (wordBuffer) {
-          speak(wordBuffer, { rate: 1.0, pitch: 1.0, volume: 1.0 });
+          speakIfNotMuted(wordBuffer, { rate: 1.0, pitch: 1.0, volume: 1.0 });
           setSentenceBuffer(prev => [...prev, wordBuffer]);
           trackWordUsage(wordBuffer, false); // Track as manually completed
           setWordBuffer('');
@@ -451,7 +480,7 @@ export function GestureRecognizer() {
                 playBeep();
                 
                 // Speak the letter immediately
-                speak(stableLetter, { rate: 1.1, pitch: 1.0, volume: 1.0 });
+                speakIfNotMuted(stableLetter, { rate: 1.1, pitch: 1.0, volume: 1.0 });
                 setCurrentPhrase(stableLetter);
                 
                 console.log('🤖 AI DETECTED:', stableLetter, '→ Word:', newWord);
@@ -491,7 +520,7 @@ export function GestureRecognizer() {
             playBeep();
             
             // Speak the letter immediately in a natural way
-            speak(stableLetter, { rate: 1.1, pitch: 1.0, volume: 1.0 });
+            speakIfNotMuted(stableLetter, { rate: 1.1, pitch: 1.0, volume: 1.0 });
             setCurrentPhrase(stableLetter);
             
             console.log('✅ ADDED:', stableLetter, '→ Word:', newWord);
@@ -518,7 +547,7 @@ export function GestureRecognizer() {
         if (phraseResult && phraseResult.phrase !== lastSpokenGesture) {
           const translatedPhrase = translateGesture(phraseResult.phrase, selectedLanguage);
           setCurrentPhrase(`👋 ${translatedPhrase}`);
-          speak(translatedPhrase, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
+          speakIfNotMuted(translatedPhrase, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
           setLastSpokenGesture(phraseResult.phrase);
           playWhoosh();
           
@@ -539,7 +568,7 @@ export function GestureRecognizer() {
             // Translate gesture to selected language
             const translatedPhrase = translateGesture(phrase, selectedLanguage);
             setCurrentPhrase(translatedPhrase);
-            speak(translatedPhrase, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
+            speakIfNotMuted(translatedPhrase, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
             setLastSpokenGesture(gestureName);
             
             setTimeout(() => setLastSpokenGesture(null), 2000);
@@ -597,54 +626,84 @@ export function GestureRecognizer() {
           </div>
 
           {/* Controls */}
-          <div className="mt-3 md:mt-4 space-y-3">
-            {/* Mode Toggle */}
-            <div className="flex justify-center gap-2">
+          <div className="mt-3 md:mt-4 space-y-4">
+            {/* Mode Toggle - Premium Design */}
+            <div className="flex justify-center gap-3">
               <button
                 onClick={() => setDetectionMode('gesture')}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                  detectionMode === 'gesture'
-                    ? 'bg-purple-600 text-white shadow-lg'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                className="group relative px-6 py-3 rounded-2xl font-semibold text-sm transition-all duration-300 overflow-hidden"
+                style={{
+                  background: detectionMode === 'gesture' 
+                    ? 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)'
+                    : isDark ? 'rgba(30, 41, 59, 0.6)' : 'rgba(255, 255, 255, 0.8)',
+                  color: detectionMode === 'gesture' ? '#ffffff' : theme.text,
+                  border: `2px solid ${detectionMode === 'gesture' ? '#a855f7' : theme.border}`,
+                  boxShadow: detectionMode === 'gesture' 
+                    ? '0 8px 20px rgba(147, 51, 234, 0.3)' 
+                    : '0 4px 12px rgba(0, 0, 0, 0.05)',
+                }}
               >
-                Gesture Mode
+                <span className="relative z-10 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                  </svg>
+                  Gesture Mode
+                </span>
               </button>
               <button
                 onClick={() => setDetectionMode('letter')}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                  detectionMode === 'letter'
-                    ? 'bg-purple-600 text-white shadow-lg'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                className="group relative px-6 py-3 rounded-2xl font-semibold text-sm transition-all duration-300 overflow-hidden"
+                style={{
+                  background: detectionMode === 'letter' 
+                    ? 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)'
+                    : isDark ? 'rgba(30, 41, 59, 0.6)' : 'rgba(255, 255, 255, 0.8)',
+                  color: detectionMode === 'letter' ? '#ffffff' : theme.text,
+                  border: `2px solid ${detectionMode === 'letter' ? '#a855f7' : theme.border}`,
+                  boxShadow: detectionMode === 'letter' 
+                    ? '0 8px 20px rgba(147, 51, 234, 0.3)' 
+                    : '0 4px 12px rgba(0, 0, 0, 0.05)',
+                }}
               >
-                ASL Alphabet
+                <span className="relative z-10 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                  </svg>
+                  ASL Alphabet
+                </span>
               </button>
             </div>
 
-            {/* Language Selector, Smart Mode, and Start/Stop Controls */}
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
+            {/* Control Buttons - Premium Design - Single Row */}
+            <div className="flex flex-wrap justify-center items-center gap-3">
               {/* Language Selector */}
-              <LanguageSelector onLanguageChange={setSelectedLanguage} />
+              <LanguageSelector onLanguageChange={setSelectedLanguage} isDark={isDark} />
               
-              {/* AI Vision Toggle for ASL */}
+              {/* AI Vision Toggle - Only in Letter Mode */}
               {isRunning && detectionMode === 'letter' && (
                 <button
                   onClick={() => setUseAIVision(!useAIVision)}
-                  className={`px-4 py-2.5 rounded-xl shadow-lg transition-all duration-200 flex items-center gap-2 font-medium ${
-                    useAIVision
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
-                      : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
-                  }`}
+                  className="group relative px-5 py-3 rounded-2xl font-semibold text-sm transition-all duration-300 overflow-hidden backdrop-blur-md"
+                  style={{
+                    background: useAIVision
+                      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                      : isDark ? 'rgba(71, 85, 105, 0.6)' : 'rgba(148, 163, 184, 0.3)',
+                    color: useAIVision ? '#ffffff' : theme.textMuted,
+                    border: `2px solid ${useAIVision ? '#34d399' : theme.border}`,
+                    boxShadow: useAIVision 
+                      ? '0 8px 20px rgba(16, 185, 129, 0.3)' 
+                      : '0 4px 12px rgba(0, 0, 0, 0.05)',
+                  }}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  <div className="flex flex-col items-start">
-                    <span className="text-xs">AI Vision</span>
-                    <span className="text-xs opacity-80">{useAIVision ? 'ON' : 'OFF'}</span>
-                  </div>
+                  <span className="relative z-10 flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <div className="flex flex-col items-start leading-tight">
+                      <span className="text-xs font-bold">AI Vision</span>
+                      <span className="text-xs opacity-90">{useAIVision ? 'ON' : 'OFF'}</span>
+                    </div>
+                  </span>
                 </button>
               )}
               
@@ -654,57 +713,101 @@ export function GestureRecognizer() {
                   enabled={smartModeEnabled} 
                   onToggle={setSmartModeEnabled}
                   isRefining={isRefining}
+                  isDark={isDark}
                 />
               )}
               
-              {/* Start/Stop Controls */}
+              {/* Start/Stop Camera */}
               {!isRunning ? (
-              <button
-                onClick={handleStart}
-                disabled={isLoading}
-                className="group relative px-6 py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                <span className="text-sm">{isLoading ? 'Initializing...' : 'Start Camera'}</span>
-              </button>
-            ) : (
-              <>
                 <button
-                  onClick={handleStop}
-                  className="group relative px-6 py-2.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-medium"
+                  onClick={handleStart}
+                  disabled={isLoading}
+                  className="group relative px-8 py-3 rounded-2xl font-bold text-sm transition-all duration-300 overflow-hidden backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+                    color: '#ffffff',
+                    border: '2px solid #a78bfa',
+                    boxShadow: '0 8px 24px rgba(139, 92, 246, 0.4)',
+                  }}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                  </svg>
-                  <span className="text-sm">Stop Camera</span>
+                  <span className="relative z-10 flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    {isLoading ? 'Initializing...' : 'Start Camera'}
+                  </span>
                 </button>
-              
-              {!audioUnlocked && (
-                <button
-                  onClick={handleUnlockAudio}
-                  className="group relative px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-medium"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                  </svg>
-                  <span className="text-sm">Enable Audio</span>
-                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={handleStop}
+                    className="group relative px-8 py-3 rounded-2xl font-bold text-sm transition-all duration-300 overflow-hidden backdrop-blur-md"
+                    style={{
+                      background: 'linear-gradient(135deg, #ec4899 0%, #ef4444 100%)',
+                      color: '#ffffff',
+                      border: '2px solid #f472b6',
+                      boxShadow: '0 8px 24px rgba(236, 72, 153, 0.4)',
+                    }}
+                  >
+                    <span className="relative z-10 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                      </svg>
+                      Stop Camera
+                    </span>
+                  </button>
+                
+                  {/* Audio Toggle Button - Mute/Unmute */}
+                  <button
+                    onClick={() => {
+                      if (!audioUnlocked) {
+                        handleUnlockAudio();
+                      } else {
+                        setAudioMuted(!audioMuted);
+                      }
+                    }}
+                    className="group relative px-8 py-3 rounded-2xl font-bold text-sm transition-all duration-300 overflow-hidden backdrop-blur-md"
+                    style={{
+                      background: !audioUnlocked || audioMuted
+                        ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+                        : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      color: '#ffffff',
+                      border: `2px solid ${!audioUnlocked || audioMuted ? '#f87171' : '#34d399'}`,
+                      boxShadow: !audioUnlocked || audioMuted
+                        ? '0 8px 24px rgba(239, 68, 68, 0.4)'
+                        : '0 8px 24px rgba(16, 185, 129, 0.4)',
+                    }}
+                  >
+                    <span className="relative z-10 flex items-center gap-2">
+                      {!audioUnlocked ? (
+                        <>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                          </svg>
+                          Enable Audio
+                        </>
+                      ) : audioMuted ? (
+                        <>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                          </svg>
+                          Audio Muted
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                          </svg>
+                          Audio On
+                        </>
+                      )}
+                    </span>
+                  </button>
+                </>
               )}
-              
-              {audioUnlocked && (
-                <div className="px-4 py-2.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 rounded-xl text-sm font-medium flex items-center gap-2 border border-green-200 shadow-sm">
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>Audio Enabled</span>
-                </div>
-              )}
-            </>
-            )}
-          </div>
+            </div>
           </div>
 
           {/* Smart Mode AI Refinement Result */}
@@ -798,14 +901,17 @@ export function GestureRecognizer() {
 
               {/* Divider */}
               {sentenceBuffer.length > 0 && (
-                <div className="flex-shrink-0 my-4 border-t-2 border-gray-200" />
+                <div className="flex-shrink-0 my-4 border-t-2" style={{ borderColor: theme.border }} />
               )}
 
               {/* Word History - Scrollable Area with Fixed Height */}
               {sentenceBuffer.length > 0 && (
-                <div className="flex-shrink-0 mt-3 bg-white rounded-xl shadow-lg border border-gray-200" style={{ height: '400px', display: 'flex', flexDirection: 'column' }}>
-                  <div className="flex-shrink-0 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-gray-200 flex items-center justify-between">
-                    <div className="text-xs font-semibold text-purple-700">WORD HISTORY ({sentenceBuffer.length} words)</div>
+                <div className="flex-shrink-0 mt-3 rounded-xl shadow-lg" style={{ height: '400px', display: 'flex', flexDirection: 'column', backgroundColor: theme.card, border: `1px solid ${theme.cardBorder}` }}>
+                  <div className="flex-shrink-0 p-3 border-b flex items-center justify-between" style={{ 
+                    background: isDark ? 'linear-gradient(to right, rgba(88, 28, 135, 0.3), rgba(67, 56, 202, 0.3))' : 'linear-gradient(to right, #faf5ff, #eef2ff)',
+                    borderColor: theme.cardBorder
+                  }}>
+                    <div className="text-xs font-semibold" style={{ color: isDark ? '#c4b5fd' : '#7c3aed' }}>WORD HISTORY ({sentenceBuffer.length} words)</div>
                     {sentenceBuffer.length > 5 && (
                       <button
                         onClick={(e) => {
@@ -814,7 +920,8 @@ export function GestureRecognizer() {
                             scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
                           }
                         }}
-                        className="text-xs text-purple-600 hover:text-purple-800 font-medium"
+                        className="text-xs font-medium hover:opacity-80"
+                        style={{ color: isDark ? '#a78bfa' : '#7c3aed' }}
                       >
                         ↑ Scroll to top
                       </button>
@@ -823,7 +930,7 @@ export function GestureRecognizer() {
                   <div 
                     className="flex-1 overflow-y-scroll p-4"
                     style={{
-                      scrollbarColor: '#9333ea #f3f4f6'
+                      scrollbarColor: `${isDark ? '#7c3aed' : '#9333ea'} ${theme.scrollbarTrack}`
                     }}
                   >
                     <style jsx>{`
@@ -879,40 +986,41 @@ export function GestureRecognizer() {
               )}
 
               {/* Control Gesture Instructions - Fixed Bottom */}
-              <div className="flex-shrink-0 mt-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div className="flex-shrink-0 mt-3 p-4 rounded-xl" style={{ backgroundColor: isDark ? 'rgba(30, 41, 59, 0.6)' : 'rgba(249, 250, 251, 0.8)', border: `1px solid ${theme.cardBorder}` }}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs font-semibold text-gray-700">CONTROL GESTURES</div>
+                  <div className="text-xs font-semibold" style={{ color: theme.text }}>CONTROL GESTURES</div>
                   <button
                     onClick={() => {
                       clearContext();
                       setCurrentPhrase('✓ Context cleared');
                       setTimeout(() => setCurrentPhrase(''), 2000);
                     }}
-                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-xs font-medium hover:opacity-80"
+                    style={{ color: isDark ? '#60a5fa' : '#2563eb' }}
                   >
                     Reset Context
                   </button>
                 </div>
                 <div className="space-y-2 text-xs">
-                  <div className="flex items-center gap-2 p-2 bg-white rounded-lg">
+                  <div className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: theme.button, border: `1px solid ${theme.border}` }}>
                     <div className="text-2xl">✋</div>
                     <div className="flex-1">
-                      <div className="font-semibold text-gray-800">SPACE (1s)</div>
-                      <div className="text-gray-600">Flat hand, palm forward → Speak word</div>
+                      <div className="font-semibold" style={{ color: theme.text }}>SPACE (1s)</div>
+                      <div style={{ color: theme.textMuted }}>Flat hand, palm forward → Speak word</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 p-2 bg-white rounded-lg">
+                  <div className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: theme.button, border: `1px solid ${theme.border}` }}>
                     <div className="text-2xl">✊</div>
                     <div className="flex-1">
-                      <div className="font-semibold text-gray-800">PERIOD (2s)</div>
-                      <div className="text-gray-600">Closed fist, thumb wrapped → Speak sentence</div>
+                      <div className="font-semibold" style={{ color: theme.text }}>PERIOD (2s)</div>
+                      <div style={{ color: theme.textMuted }}>Closed fist, thumb wrapped → Speak sentence</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 p-2 bg-white rounded-lg">
+                  <div className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: theme.button, border: `1px solid ${theme.border}` }}>
                     <div className="text-2xl">👍</div>
                     <div className="flex-1">
-                      <div className="font-semibold text-gray-800">BACKSPACE</div>
-                      <div className="text-gray-600">Thumb out, shake left-right → Delete letter</div>
+                      <div className="font-semibold" style={{ color: theme.text }}>BACKSPACE</div>
+                      <div style={{ color: theme.textMuted }}>Thumb out, shake left-right → Delete letter</div>
                     </div>
                   </div>
                   <div className="text-xs text-gray-500 mt-2 italic">
