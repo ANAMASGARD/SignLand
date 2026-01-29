@@ -5,9 +5,13 @@ import { useCamera } from '@/hooks/useCamera';
 import { useMediaPipe } from '@/hooks/useMediaPipe';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { drawLandmarks } from '@/lib/mediapipe/drawLandmarks';
-import { gestureToPhrase } from '@/lib/speech';
+import { detectASLLetter, type ASLDetectionResult } from '@/lib/mediapipe/aslAlphabet';
+import { detectControlGesture } from '@/lib/mediapipe/controlGestures';
+import { playBeep, playWhoosh } from '@/lib/audio/soundEffects';
+import { gestureToPhrase, letterToPhrase, formatSentence, shouldIncreasePitch, speakNaturally, enhanceWithContext, updateContext, clearContext, predictWord, trackWordUsage, saveToDictionary } from '@/lib/speech';
 import { ShimmerButton } from '@/components/ui/ShimmerButton';
-import type { GestureRecognizerResult } from '@mediapipe/tasks-vision';
+import { ComingSoonFeatures } from '@/components/ComingSoonFeatures';
+import type { GestureRecognizerResult, NormalizedLandmark } from '@mediapipe/tasks-vision';
 
 export function GestureRecognizer() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -15,6 +19,8 @@ export function GestureRecognizer() {
   const animationFrameRef = useRef<number | null>(null);
   const lastVideoTimeRef = useRef<number>(-1);
   const detectGesturesRef = useRef<(() => void) | null>(null);
+  const previousLandmarksRef = useRef<NormalizedLandmark[] | null>(null);
+  const previousTimeRef = useRef<number>(0);
 
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<GestureRecognizerResult | null>(null);
@@ -27,14 +33,65 @@ export function GestureRecognizer() {
   const [lastSpokenGesture, setLastSpokenGesture] = useState<string | null>(null);
   const [currentPhrase, setCurrentPhrase] = useState<string>('');
   const [audioUnlocked, setAudioUnlocked] = useState(false);
+  
+  // Word builder state
+  const [wordBuffer, setWordBuffer] = useState<string>('');
+  const [sentenceBuffer, setSentenceBuffer] = useState<string[]>([]);
+  const [controlGestureHoldStart, setControlGestureHoldStart] = useState<number | null>(null);
+  const [controlGestureProgress, setControlGestureProgress] = useState<number>(0);
+  const [currentControlGesture, setCurrentControlGesture] = useState<string | null>(null);
+  const [detectedLetter, setDetectedLetter] = useState<string>('');
+  const [letterHistory, setLetterHistory] = useState<string[]>([]);
+  const [detectionMode, setDetectionMode] = useState<'gesture' | 'letter'>('gesture');
+  const [predictions, setPredictions] = useState<Array<{ word: string; confidence: number }>>([]);
+  const [lastLetterTime, setLastLetterTime] = useState<number>(Date.now());
+  const [showCommitSuccess, setShowCommitSuccess] = useState(false);
+  
+  // Letter stabilization buffer (last 5 detections)
+  const letterBufferRef = useRef<Array<{ letter: string; confidence: number }>>([]);
 
   const lastFrameTimeRef = useRef<number>(0);
   const frameCountRef = useRef<number>(0);
+
+  // Commit word function
+  const commitWord = () => {
+    if (!wordBuffer) return;
+    
+    speak(wordBuffer, { rate: 1.0, pitch: 1.0, volume: 1.0 });
+    setSentenceBuffer(prev => [...prev, wordBuffer]);
+    trackWordUsage(wordBuffer, false);
+    playWhoosh();
+    
+    // Success animation
+    setShowCommitSuccess(true);
+    setTimeout(() => setShowCommitSuccess(false), 1000);
+    
+    // Haptic feedback
+    if ('vibrate' in navigator) navigator.vibrate(100);
+    
+    setWordBuffer('');
+    setPredictions([]);
+    setCurrentPhrase(`✓ ${wordBuffer}`);
+  };
 
   // Initialize lastFrameTimeRef on mount
   useEffect(() => {
     lastFrameTimeRef.current = performance.now();
   }, []);
+
+  // Auto-commit after 3 seconds of inactivity
+  useEffect(() => {
+    if (!wordBuffer || detectionMode !== 'letter') return;
+    
+    const timer = setTimeout(() => {
+      const timeSinceLastLetter = Date.now() - lastLetterTime;
+      if (timeSinceLastLetter >= 3000 && wordBuffer) {
+        commitWord();
+      }
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, [wordBuffer, lastLetterTime, detectionMode]);
 
   // Attach stream to video element and play
   useEffect(() => {
@@ -191,37 +248,189 @@ export function GestureRecognizer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Trigger speech when gesture is detected
+  // Trigger speech when gesture is detected OR handle word builder
   useEffect(() => {
-    if (!isRunning || !audioUnlocked || !results?.gestures?.[0]?.[0]) {
+    if (!isRunning || !audioUnlocked || !results) {
       return;
     }
 
-    const gesture = results.gestures[0][0];
-    const gestureName = gesture.categoryName;
-    const confidence = gesture.score;
+    const currentTime = performance.now();
 
-    // Only speak if confidence is high enough and gesture changed
-    if (confidence > 0.7 && gestureName !== lastSpokenGesture) {
-      const phrase = gestureToPhrase(gestureName);
-      
-      // Only speak if we got a valid phrase (not None/Unknown)
-      if (phrase) {
-        setCurrentPhrase(phrase);
-        speak(phrase, {
-          rate: 1.0,
-          pitch: 1.0,
-          volume: 1.0,
-        });
-        setLastSpokenGesture(gestureName);
+    // Word builder mode - check control gestures first
+    if (detectionMode === 'letter' && results.landmarks?.[0]) {
+      const landmarks = results.landmarks[0];
+      const controlResult = detectControlGesture(
+        landmarks,
+        previousLandmarksRef.current,
+        controlGestureHoldStart,
+        currentTime,
+        previousTimeRef.current
+      );
+
+      // Update previous landmarks and time for velocity tracking
+      previousLandmarksRef.current = landmarks;
+      previousTimeRef.current = currentTime;
+
+      // Update progress bar
+      setControlGestureProgress(controlResult.holdProgress);
+
+      // Start hold timer if gesture detected
+      if (controlResult.holdProgress > 0 && !controlGestureHoldStart) {
+        setControlGestureHoldStart(currentTime);
+        setCurrentControlGesture(controlResult.gesture || 'HOLD');
+      }
+
+      // Reset hold timer if gesture released
+      if (controlResult.holdProgress === 0 && controlGestureHoldStart) {
+        setControlGestureHoldStart(null);
+        setCurrentControlGesture(null);
+      }
+
+      // Handle completed control gestures
+      if (controlResult.gesture === 'SPACE' && controlResult.holdProgress >= 1) {
+        if (wordBuffer) {
+          speak(wordBuffer, { rate: 1.0, pitch: 1.0, volume: 1.0 });
+          setSentenceBuffer(prev => [...prev, wordBuffer]);
+          trackWordUsage(wordBuffer, false); // Track as manually completed
+          setWordBuffer('');
+          setPredictions([]);
+          playWhoosh();
+          setCurrentPhrase(`✓ Word: ${wordBuffer}`);
+          // Haptic feedback
+          if ('vibrate' in navigator) navigator.vibrate(50);
+        }
+        setControlGestureHoldStart(null);
+        setCurrentControlGesture(null);
+        setControlGestureProgress(0);
+      } else if (controlResult.gesture === 'PERIOD' && controlResult.holdProgress >= 1) {
+        if (sentenceBuffer.length > 0 || wordBuffer) {
+          const words = [...sentenceBuffer, wordBuffer].filter(Boolean);
+          const enhancedWords = enhanceWithContext(words);
+          const formattedSentence = formatSentence(enhancedWords);
+          speakNaturally(formattedSentence);
+          updateContext(formattedSentence, words);
+          setCurrentPhrase(`✓ ${formattedSentence}`);
+          setSentenceBuffer([]);
+          setWordBuffer('');
+          playWhoosh();
+          // Haptic feedback
+          if ('vibrate' in navigator) navigator.vibrate([50, 50, 50]);
+        }
+        setControlGestureHoldStart(null);
+        setCurrentControlGesture(null);
+        setControlGestureProgress(0);
+      } else if (controlResult.gesture === 'BACKSPACE') {
+        if (wordBuffer) {
+          setWordBuffer(prev => prev.slice(0, -1));
+          playBeep();
+          // Haptic feedback
+          if ('vibrate' in navigator) navigator.vibrate(30);
+          playBeep();
+        }
+      }
+      // Check for thumbs up to commit word (hold 1 second)
+      else if (!currentControlGesture && wordBuffer && results.gestures?.[0]?.[0]) {
+        const gesture = results.gestures[0][0];
+        if (gesture.categoryName === 'Thumb_Up' && gesture.score > 0.7) {
+          const holdDuration = controlGestureHoldStart ? (currentTime - controlGestureHoldStart) / 1000 : 0;
+          
+          if (!controlGestureHoldStart) {
+            setControlGestureHoldStart(currentTime);
+            setCurrentControlGesture('THUMBS_UP');
+          }
+          
+          const progress = Math.min(holdDuration / 1.0, 1);
+          setControlGestureProgress(progress);
+          
+          if (progress >= 1) {
+            commitWord();
+            setControlGestureHoldStart(null);
+            setCurrentControlGesture(null);
+            setControlGestureProgress(0);
+          }
+        } else if (currentControlGesture === 'THUMBS_UP') {
+          // Released before 1 second
+          setControlGestureHoldStart(null);
+          setCurrentControlGesture(null);
+          setControlGestureProgress(0);
+        }
+      }
+      // Check for thumbs up to accept prediction
+      else if (!currentControlGesture && predictions.length > 0 && results.gestures?.[0]?.[0]) {
+        const gesture = results.gestures[0][0];
+        if (gesture.categoryName === 'Thumb_Up' && gesture.score > 0.7) {
+          // Accept first prediction
+          const accepted = predictions[0].word;
+          setWordBuffer(accepted);
+          setPredictions([]);
+          trackWordUsage(accepted, true);
+          playWhoosh();
+          setCurrentPhrase(`✓ ${accepted}`);
+          setTimeout(() => setCurrentPhrase(''), 2000);
+        }
+      }
+      // Detect letters only if no control gesture active
+      else if (!currentControlGesture) {
+        const handedness = results.handednesses?.[0]?.[0]?.categoryName || 'Right';
+        const aslResult = detectASLLetter(landmarks, handedness);
         
-        // Reset after 2 seconds to allow repeating same gesture
-        setTimeout(() => {
-          setLastSpokenGesture(null);
-        }, 2000);
+        // Add to stabilization buffer
+        if (aslResult.letter && aslResult.confidence > 0) {
+          letterBufferRef.current.push(aslResult);
+          if (letterBufferRef.current.length > 3) {
+            letterBufferRef.current.shift();
+          }
+          
+          // Require 2 out of last 3 frames to agree (faster response)
+          if (letterBufferRef.current.length >= 2) {
+            const letterCounts: Record<string, number> = {};
+            letterBufferRef.current.forEach(r => {
+              letterCounts[r.letter] = (letterCounts[r.letter] || 0) + 1;
+            });
+            
+            const mostCommon = Object.entries(letterCounts)
+              .sort((a, b) => b[1] - a[1])[0];
+            
+            // If 2+ frames agree on same letter
+            if (mostCommon && mostCommon[1] >= 2 && mostCommon[0] !== lastSpokenGesture) {
+              const stableLetter = mostCommon[0];
+              const newWord = wordBuffer + stableLetter;
+              setWordBuffer(newWord);
+              setLastLetterTime(Date.now());
+              playBeep();
+              
+              // Update predictions if 3+ letters
+              if (newWord.length >= 3) {
+                setPredictions(predictWord(newWord));
+              }
+              
+              setLastSpokenGesture(stableLetter);
+              letterBufferRef.current = []; // Clear buffer after detection
+              setTimeout(() => setLastSpokenGesture(null), 800);
+            }
+          }
+        }
       }
     }
-  }, [results, isRunning, audioUnlocked, lastSpokenGesture, speak]);
+    // Gesture mode - original behavior
+    else if (detectionMode === 'gesture' && results.gestures?.[0]?.[0]) {
+      const gesture = results.gestures[0][0];
+      const gestureName = gesture.categoryName;
+      const confidence = gesture.score;
+
+      if (confidence > 0.7 && gestureName !== lastSpokenGesture) {
+        const phrase = gestureToPhrase(gestureName);
+        
+        if (phrase) {
+          setCurrentPhrase(phrase);
+          speak(phrase, { rate: 1.0, pitch: 1.0, volume: 1.0 });
+          setLastSpokenGesture(gestureName);
+          
+          setTimeout(() => setLastSpokenGesture(null), 2000);
+        }
+      }
+    }
+  }, [results, isRunning, audioUnlocked, lastSpokenGesture, speak, detectionMode, wordBuffer, sentenceBuffer, controlGestureHoldStart, currentControlGesture]);
 
   const isLoading = cameraLoading || mediapipeLoading;
   const error = cameraError || mediapipeError;
@@ -271,8 +480,33 @@ export function GestureRecognizer() {
           </div>
 
           {/* Controls */}
-          <div className="mt-3 md:mt-4 flex justify-center gap-3">
-            {!isRunning ? (
+          <div className="mt-3 md:mt-4 space-y-3">
+            {/* Mode Toggle */}
+            <div className="flex justify-center gap-2">
+              <button
+                onClick={() => setDetectionMode('gesture')}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                  detectionMode === 'gesture'
+                    ? 'bg-purple-600 text-white shadow-lg'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Gesture Mode
+              </button>
+              <button
+                onClick={() => setDetectionMode('letter')}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                  detectionMode === 'letter'
+                    ? 'bg-purple-600 text-white shadow-lg'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                ASL Alphabet
+              </button>
+            </div>
+
+            {/* Start/Stop Controls */}
+            <div className="flex justify-center gap-3">{!isRunning ? (
               <ShimmerButton
                 onClick={handleStart}
                 disabled={isLoading}
@@ -320,6 +554,217 @@ export function GestureRecognizer() {
             </>
             )}
           </div>
+          </div>
+
+          {/* Word Builder Display */}
+          {detectionMode === 'letter' && (
+            <div className="mt-4 flex flex-col h-[calc(100vh-300px)] min-h-[500px]">
+              {/* Current Word Being Spelled - Fixed Top */}
+              <div className={`flex-shrink-0 p-6 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl shadow-lg border-2 transition-all duration-300 ${showCommitSuccess ? 'border-green-400 bg-green-50' : 'border-purple-200'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs font-semibold text-purple-600">CURRENT WORD</div>
+                  {wordBuffer && (
+                    <button
+                      onClick={commitWord}
+                      className="px-3 py-1 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      Speak Word
+                    </button>
+                  )}
+                </div>
+                <div className="text-5xl font-bold text-purple-900 min-h-[4rem] flex items-center">
+                  {wordBuffer ? (
+                    <>
+                      {wordBuffer}
+                      <span className="animate-pulse ml-1">|</span>
+                    </>
+                  ) : (
+                    <span className="text-gray-400 text-2xl">
+                      {showCommitSuccess ? '✓ Ready for next word' : 'Start spelling...'}
+                    </span>
+                  )}
+                </div>
+                {wordBuffer && (
+                  <div className="mt-3 text-sm text-purple-600 flex items-center gap-2">
+                    <span>👍</span>
+                    <span>Hold Thumbs Up 1s to speak word</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Thumbs Up Progress - Fixed */}
+              {currentControlGesture === 'THUMBS_UP' && controlGestureProgress > 0 && (
+                <div className="flex-shrink-0 mt-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-green-700">👍 Hold to speak...</span>
+                    <span className="text-xs text-green-600">{Math.round(controlGestureProgress * 100)}%</span>
+                  </div>
+                  <div className="w-full bg-green-200 rounded-full h-3">
+                    <div
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 h-full rounded-full transition-all duration-100"
+                      style={{ width: `${controlGestureProgress * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Word Predictions - Fixed */}
+              {predictions.length > 0 && !wordBuffer.includes(' ') && (
+                <div className="flex-shrink-0 mt-3 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-lg border-2 border-blue-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-semibold text-blue-600">PREDICTIONS</div>
+                    <div className="text-xs text-blue-500">👍 Quick tap to accept</div>
+                  </div>
+                  <div className="space-y-2">
+                    {predictions.map((pred, idx) => (
+                      <div
+                        key={idx}
+                        className={`p-3 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors ${idx === 0 ? 'bg-blue-100 border-2 border-blue-300' : 'bg-white'}`}
+                        onClick={() => {
+                          setWordBuffer(pred.word);
+                          setPredictions([]);
+                          trackWordUsage(pred.word, true);
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-bold text-gray-800">{pred.word}</span>
+                          <span className="text-sm text-gray-600">{pred.confidence}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Divider */}
+              {sentenceBuffer.length > 0 && (
+                <div className="flex-shrink-0 my-4 border-t-2 border-gray-200" />
+              )}
+
+              {/* Word History - Scrollable Area with Fixed Height */}
+              {sentenceBuffer.length > 0 && (
+                <div className="flex-shrink-0 mt-3 bg-white rounded-xl shadow-lg border border-gray-200" style={{ height: '400px', display: 'flex', flexDirection: 'column' }}>
+                  <div className="flex-shrink-0 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-gray-200 flex items-center justify-between">
+                    <div className="text-xs font-semibold text-purple-700">WORD HISTORY ({sentenceBuffer.length} words)</div>
+                    {sentenceBuffer.length > 5 && (
+                      <button
+                        onClick={(e) => {
+                          const scrollContainer = e.currentTarget.parentElement?.nextElementSibling as HTMLElement;
+                          if (scrollContainer) {
+                            scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                          }
+                        }}
+                        className="text-xs text-purple-600 hover:text-purple-800 font-medium"
+                      >
+                        ↑ Scroll to top
+                      </button>
+                    )}
+                  </div>
+                  <div 
+                    className="flex-1 overflow-y-scroll p-4"
+                    style={{
+                      scrollbarColor: '#9333ea #f3f4f6'
+                    }}
+                  >
+                    <style jsx>{`
+                      div::-webkit-scrollbar {
+                        width: 12px;
+                      }
+                      div::-webkit-scrollbar-track {
+                        background: #f3f4f6;
+                        border-radius: 6px;
+                      }
+                      div::-webkit-scrollbar-thumb {
+                        background: linear-gradient(180deg, #9333ea 0%, #7e22ce 100%);
+                        border-radius: 6px;
+                      }
+                      div::-webkit-scrollbar-thumb:hover {
+                        background: linear-gradient(180deg, #7e22ce 0%, #6b21a8 100%);
+                      }
+                    `}</style>
+                    <div className="space-y-2">
+                      {sentenceBuffer.map((word, idx) => (
+                        <div 
+                          key={idx}
+                          className="p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200 hover:border-purple-300 transition-colors min-h-[40px] flex items-center"
+                        >
+                          <span className="text-sm font-medium text-purple-900 mr-2">#{idx + 1}</span>
+                          <span className="text-lg text-gray-800 font-medium">{word}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Control Gesture Timer - Fixed Bottom */}
+              {controlGestureProgress > 0 && currentControlGesture !== 'THUMBS_UP' && (
+                <div className="flex-shrink-0 mt-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-green-700">
+                      {currentControlGesture === 'HOLD' ? 'Hold gesture...' : 
+                       currentControlGesture === 'SPACE' ? 'SPACE (1s)' : 'PERIOD (2s)'}
+                    </span>
+                    <span className="text-xs text-green-600">
+                      {Math.round(controlGestureProgress * 100)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-green-200 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 h-full transition-all duration-100"
+                      style={{ width: `${controlGestureProgress * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Control Gesture Instructions - Fixed Bottom */}
+              <div className="flex-shrink-0 mt-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-xs font-semibold text-gray-700">CONTROL GESTURES</div>
+                  <button
+                    onClick={() => {
+                      clearContext();
+                      setCurrentPhrase('✓ Context cleared');
+                      setTimeout(() => setCurrentPhrase(''), 2000);
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Reset Context
+                  </button>
+                </div>
+                <div className="space-y-2 text-xs">
+                  <div className="flex items-center gap-2 p-2 bg-white rounded-lg">
+                    <div className="text-2xl">✋</div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-800">SPACE (1s)</div>
+                      <div className="text-gray-600">Flat hand, palm forward → Speak word</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 bg-white rounded-lg">
+                    <div className="text-2xl">✊</div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-800">PERIOD (2s)</div>
+                      <div className="text-gray-600">Closed fist, thumb wrapped → Speak sentence</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 bg-white rounded-lg">
+                    <div className="text-2xl">👍</div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-800">BACKSPACE</div>
+                      <div className="text-gray-600">Thumb out, shake left-right → Delete letter</div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-2 italic">
+                    💡 Hold gestures steady for timer to fill
+                  </div>
+                </div>
+              </div>
+
+              {/* Coming Soon Features */}
+              <ComingSoonFeatures />
+            </div>
+          )}
 
           {error && (
             <div className="mt-4 p-3 md:p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">

@@ -94,8 +94,8 @@ export function useSpeechSynthesis() {
       };
 
       utterance.onerror = (event) => {
-        // Only log actual errors, not "interrupted" or "cancelled"
-        if (event.error !== 'interrupted' && event.error !== 'cancelled') {
+        // Only log actual errors, not "interrupted" or "canceled"
+        if (event.error !== 'interrupted' && event.error !== 'canceled') {
           console.error('Speech error:', event.error, 'for text:', text);
         }
         
