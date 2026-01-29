@@ -3,8 +3,9 @@
 import { useRef, useEffect, useState } from 'react';
 import { useCamera } from '@/hooks/useCamera';
 import { useMediaPipe } from '@/hooks/useMediaPipe';
+import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { drawLandmarks } from '@/lib/mediapipe/drawLandmarks';
-import { cn } from '@/lib/utils';
+import { gestureToPhrase } from '@/lib/speech';
 import { ShimmerButton } from '@/components/ui/ShimmerButton';
 import type { GestureRecognizerResult } from '@mediapipe/tasks-vision';
 
@@ -21,6 +22,11 @@ export function GestureRecognizer() {
 
   const { stream, isLoading: cameraLoading, error: cameraError, startCamera, stopCamera } = useCamera();
   const { recognizer, isLoading: mediapipeLoading, error: mediapipeError } = useMediaPipe();
+  const { speak, isSpeaking, error: speechError } = useSpeechSynthesis();
+
+  const [lastSpokenGesture, setLastSpokenGesture] = useState<string | null>(null);
+  const [currentPhrase, setCurrentPhrase] = useState<string>('');
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
 
   const lastFrameTimeRef = useRef<number>(0);
   const frameCountRef = useRef<number>(0);
@@ -149,6 +155,16 @@ export function GestureRecognizer() {
     stopCamera();
   };
 
+  // Unlock audio with user interaction
+  const handleUnlockAudio = () => {
+    // Speak a silent utterance to unlock audio on mobile browsers
+    const utterance = new SpeechSynthesisUtterance('');
+    utterance.volume = 0;
+    speechSynthesis.speak(utterance);
+    setAudioUnlocked(true);
+    console.log('Audio unlocked');
+  };
+
   // Start/stop detection loop based on isRunning
   useEffect(() => {
     if (isRunning && recognizer && stream && detectGesturesRef.current) {
@@ -174,6 +190,38 @@ export function GestureRecognizer() {
     return cleanup;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Trigger speech when gesture is detected
+  useEffect(() => {
+    if (!isRunning || !audioUnlocked || !results?.gestures?.[0]?.[0]) {
+      return;
+    }
+
+    const gesture = results.gestures[0][0];
+    const gestureName = gesture.categoryName;
+    const confidence = gesture.score;
+
+    // Only speak if confidence is high enough and gesture changed
+    if (confidence > 0.7 && gestureName !== lastSpokenGesture) {
+      const phrase = gestureToPhrase(gestureName);
+      
+      // Only speak if we got a valid phrase (not None/Unknown)
+      if (phrase) {
+        setCurrentPhrase(phrase);
+        speak(phrase, {
+          rate: 1.0,
+          pitch: 1.0,
+          volume: 1.0,
+        });
+        setLastSpokenGesture(gestureName);
+        
+        // Reset after 2 seconds to allow repeating same gesture
+        setTimeout(() => {
+          setLastSpokenGesture(null);
+        }, 2000);
+      }
+    }
+  }, [results, isRunning, audioUnlocked, lastSpokenGesture, speak]);
 
   const isLoading = cameraLoading || mediapipeLoading;
   const error = cameraError || mediapipeError;
@@ -223,7 +271,7 @@ export function GestureRecognizer() {
           </div>
 
           {/* Controls */}
-          <div className="mt-3 md:mt-4 flex justify-center">
+          <div className="mt-3 md:mt-4 flex justify-center gap-3">
             {!isRunning ? (
               <ShimmerButton
                 onClick={handleStart}
@@ -237,16 +285,39 @@ export function GestureRecognizer() {
                 {isLoading ? 'Initializing...' : 'Start Camera'}
               </ShimmerButton>
             ) : (
-              <ShimmerButton
-                onClick={handleStop}
-                background="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
-              >
-                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+              <>
+                <ShimmerButton
+                  onClick={handleStop}
+                  background="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+                >
+                  <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
                 </svg>
                 Stop Camera
               </ShimmerButton>
+              
+              {!audioUnlocked && (
+                <ShimmerButton
+                  onClick={handleUnlockAudio}
+                  background="linear-gradient(135deg, #4ade80 0%, #22c55e 100%)"
+                >
+                  <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                  </svg>
+                  Enable Audio
+                </ShimmerButton>
+              )}
+              
+              {audioUnlocked && (
+                <div className="px-4 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Audio Enabled
+                </div>
+              )}
+            </>
             )}
           </div>
 
@@ -263,6 +334,20 @@ export function GestureRecognizer() {
               </div>
             </div>
           )}
+
+          {speechError && (
+            <div className="mt-4 p-3 md:p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div>
+                  <p className="text-yellow-800 text-sm font-medium">Speech synthesis unavailable</p>
+                  <p className="text-yellow-600 text-xs mt-1">{speechError}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Results Panel - Right Side */}
@@ -274,6 +359,21 @@ export function GestureRecognizer() {
               </svg>
               Detected Gestures
             </h3>
+
+            {/* Current Phrase Display */}
+            {currentPhrase && (
+              <div className="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                  </svg>
+                  <span className="text-xs font-semibold text-green-700">
+                    {isSpeaking ? 'Speaking...' : 'Last Spoken'}
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-green-800">{currentPhrase}</p>
+              </div>
+            )}
 
             {!isRunning && (
               <div className="text-center py-8 md:py-12">

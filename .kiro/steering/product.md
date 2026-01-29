@@ -124,11 +124,16 @@ People who need communication aids that:
 - **Navigation**: Updated landing page with "Get Started" and "Sign in" buttons
 - **Responsive Design**: Mobile-first design with Tailwind CSS across all pages
 - **Environment Configuration**: Complete setup for Clerk authentication and API keys
+- **MediaPipe Gesture Recognition**: Real-time hand tracking with 21-point landmark visualization
+- **GestureRecognizer Component**: Video/canvas overlay with 30 FPS processing
+- **Premium UI Components**: Shimmer buttons with Aceternity UI style and glassmorphism effects
+- **Camera Management**: Custom hooks for webcam access and MediaPipe lifecycle
+- **Responsive Layout**: Viewport-based heights with mobile-first design approach
 
 ### 🚧 In Progress
-- **Gesture Recognition**: MediaPipe integration for hand tracking
-- **Speech Synthesis**: Web Speech API implementation
-- **Gesture Stabilizer**: Debouncing and consensus logic
+- **Gesture Stabilizer**: Debouncing and consensus logic for stable gesture detection
+- **Speech Synthesis**: Web Speech API implementation for audio output
+- **Gesture-to-Phrase Mapping**: Common sign language phrases and vocabulary
 - **Smart Mode**: Gemini API integration for text refinement
 
 ### 📋 Planned Features
@@ -136,15 +141,18 @@ People who need communication aids that:
 - **Gesture Library**: Custom gesture mapping and training
 - **Onboarding Flow**: Tutorial for first-time users
 - **Analytics Dashboard**: Usage statistics and performance metrics
+- **Phrase History**: Track and replay recent translations
+- **Multi-language Support**: Support for different sign language systems (ASL, BSL, etc.)
 
 ## Development Workflow
 
 ### Kiro CLI Usage
 This project leverages Kiro CLI extensively for development:
 
-- **`/paste` command**: Used for sharing screenshots and visual references to implement UI features (e.g., macOS-style glassmorphism buttons, iridescent button effects)
+- **`/paste` command**: Used for sharing screenshots and visual references to implement UI features (e.g., macOS-style glassmorphism buttons, shimmer effects, responsive layouts)
 - **Custom prompts**: `@prime`, `@plan-feature`, `@execute`, `@code-review` for structured development
 - **Steering documents**: Maintained in `.kiro/steering/` for project context and technical decisions
 - **Real-time collaboration**: Kiro CLI enables rapid iteration on UI/UX by processing visual references and implementing designs instantly
-- **Code generation**: Automated component creation (GlassButton, interactive effects) with best practices built-in
-- **Font system updates**: System-wide typography changes (San Francisco font) applied consistently across all components
+- **Code generation**: Automated component creation (GestureRecognizer, ShimmerButton, custom hooks) with best practices built-in
+- **Multi-file operations**: Simultaneous updates across components, hooks, and utilities
+- **Debugging assistance**: Quick fixes for React StrictMode issues, canvas alignment, and performance optimization

@@ -603,36 +603,139 @@ root/           # Documentation
 
 ---
 
+## Day 3: MediaPipe Gesture Recognition Implementation (January 28, 2026)
+
+### Session 1: Core Gesture Recognition (Evening)
+**Duration**: 2 hours  
+**Focus**: MediaPipe integration and real-time hand tracking
+
+#### Implemented Features
+1. **MediaPipe Integration**
+   - Created `useMediaPipe` hook for GestureRecognizer lifecycle
+   - Created `useCamera` hook for webcam access with getUserMedia
+   - Implemented `drawLandmarks` utility for 21-point hand skeleton visualization
+   - Configured VIDEO mode with 2-hand detection and GPU acceleration
+
+2. **GestureRecognizer Component**
+   - Built main component with video/canvas overlay architecture
+   - Implemented requestAnimationFrame loop for 30 FPS processing
+   - Added FPS counter for performance monitoring
+   - Created results panel with real-time gesture display
+
+3. **UI/UX Enhancements**
+   - Designed premium shimmer button component (Aceternity UI style)
+   - Implemented responsive mobile-friendly layout
+   - Added gradient backgrounds and glassmorphism effects
+   - Created two-column layout (60% video, 40% results)
+
+4. **Technical Fixes**
+   - Fixed React StrictMode camera stream issues
+   - Resolved canvas overlay alignment with object-cover video
+   - Implemented dynamic canvas sizing for proper landmark positioning
+   - Fixed landmark blinking by optimizing canvas resize logic
+
+#### Technical Decisions
+- **Canvas Overlay Strategy**: Set canvas size once on video load, not per frame
+- **Video Display**: Use `object-cover` for full container fill without letterboxing
+- **Landmark Drawing**: 21 points with green circles and white connections
+- **Gesture Detection**: Frame-by-frame with currentTime check to skip duplicates
+
+#### Challenges Overcome
+1. **Camera Stream Stopping**: React StrictMode was calling cleanup twice - fixed with empty dependency array
+2. **Landmark Misalignment**: Canvas dimensions didn't match displayed video - fixed with container-based sizing
+3. **Blinking Landmarks**: Canvas resizing every frame - fixed by setting size once
+4. **Layout Responsiveness**: Viewport-based heights (60vh) for proper scaling across devices
+
+#### Files Created
+- `web/components/GestureRecognizer.tsx` - Main gesture recognition component
+- `web/components/ui/ShimmerButton.tsx` - Premium animated button
+- `web/hooks/useCamera.ts` - Camera access management
+- `web/hooks/useMediaPipe.ts` - MediaPipe lifecycle management
+- `web/lib/mediapipe/drawLandmarks.ts` - Hand landmark visualization
+
+#### Files Modified
+- `web/app/translate/page.tsx` - Integrated GestureRecognizer component
+- `web/lib/mediapipe/gestureRecognizer.ts` - Set VIDEO mode and CDN path
+
+#### Performance Metrics
+- **FPS**: Consistent 30 FPS on desktop
+- **Latency**: < 50ms from gesture to landmark display
+- **Accuracy**: 65-72% confidence for common gestures (Open_Palm, Victory, Closed_Fist)
+
+---
+
 ## Final Reflections
 
 ### What Went Well
-- Kiro CLI quickstart wizard made initial setup incredibly fast
-- Steering documents provide clear direction for development
-- Monorepo structure keeps hackathon docs and app code cleanly separated
+- MediaPipe integration worked smoothly with proper configuration
+- Canvas overlay technique provides accurate landmark visualization
+- Premium UI design with shimmer effects looks professional
+- Mobile-responsive layout adapts well to different screen sizes
+- Kiro CLI accelerated development with instant component generation
 
 ### What Could Be Improved
-- Need to start actual implementation (currently just planning/setup)
-- Should create custom Kiro prompts specific to MediaPipe and gesture recognition
+- Need to implement gesture stabilization (debounce/consensus)
+- Should add text-to-speech integration for actual voice output
+- Could optimize for lower-end mobile devices
+- Need to add gesture-to-phrase mapping
 
 ### Key Learnings
-- Proper project structure upfront saves time later
-- Steering documents are invaluable for maintaining focus and consistency
-- Kiro CLI automation significantly accelerates setup and planning
+- React StrictMode requires careful useEffect dependency management
+- Canvas overlay with object-cover requires container-based sizing
+- MediaPipe VIDEO mode needs explicit video.play() call
+- Viewport-based heights (vh) provide better responsive scaling than fixed pixels
 
 ### Innovation Highlights
-- **Privacy-first design**: No video upload, all processing client-side
-- **Offline-first approach**: Fast Mode works without internet
-- **Dual-mode architecture**: Fast Mode for speed, Smart Mode for natural language
-- **Gesture stabilization**: Debounce/consensus algorithm to prevent false positives
+- **Real-time hand tracking**: 21-point skeleton with 30 FPS performance
+- **Premium UI**: Shimmer buttons and glassmorphism effects
+- **Mobile-first design**: Responsive layout that scales from phone to desktop
+- **Privacy-preserved**: All processing happens client-side, no video upload
+
+---
+
+## Time Breakdown
+
+### Day 1 (January 27, 2026)
+- Project setup and planning: 2 hours
+- Clerk authentication: 1.5 hours
+- Landing page design: 2 hours
+- **Total**: 5.5 hours
+
+### Day 2 (January 27-28, 2026)
+- UI refinement and bug fixes: 1.5 hours
+- **Total**: 1.5 hours
+
+### Day 3 (January 28, 2026)
+- MediaPipe integration: 2 hours
+- **Total**: 2 hours
+
+### Overall Total: 9 hours
+
+---
+
+## Kiro CLI Usage Statistics
+
+### Commands Used
+- `@prime`: 15+ times (context loading)
+- `@plan-feature`: 2 times (MediaPipe planning)
+- File operations: 50+ (read, write, create)
+- Package management: 5+ (npm install)
+- Git operations: 10+ (status, add, commit)
+
+### Most Valuable Features
+1. **Visual reference implementation** (`/paste` command) - Instant UI from screenshots
+2. **Context-aware code generation** - Components follow project patterns
+3. **Multi-file operations** - Update multiple files simultaneously
+4. **Real-time debugging** - Quick fixes with full context awareness
 
 ---
 
 ## Next Session Plan
 
-1. **Set up Next.js app** in `/web` folder with proper structure
-2. **Configure Clerk** for authentication
-3. **Implement MediaPipe** gesture recognition
-4. **Build stabilizer** logic for gesture commitment
-5. **Create TTS integration** with Web Speech API
-6. **Test Fast Mode** end-to-end flow
-7. **Update DEVLOG** with progress and decisions
+1. **Implement gesture stabilization** - Debounce and consensus algorithm
+2. **Add text-to-speech** - Web Speech API integration
+3. **Create gesture-to-phrase mapping** - Common sign language phrases
+4. **Build Smart Mode** - Gemini API integration for text refinement
+5. **Add settings page** - Voice selection and language preferences
+6. **Test end-to-end flow** - Complete gesture-to-speech pipeline
+7. **Update documentation** - Final DEVLOG and README updates
