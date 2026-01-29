@@ -474,10 +474,11 @@ export function GestureRecognizer() {
           const aslResult = detectASLLetter(landmarks, handedness);
           
           if (aslResult.letter) {
-            console.log('📏 Rule-based:', aslResult.letter, 'Confidence:', aslResult.confidence.toFixed(2));
+            console.log('📏 Detected:', aslResult.letter, 'Confidence:', aslResult.confidence.toFixed(2));
           }
           
-          if (aslResult.letter && aslResult.confidence > 0.5 && aslResult.letter !== lastSpokenGesture) {
+          // VERY LOW threshold - accept almost anything
+          if (aslResult.letter && aslResult.confidence > 0.3 && aslResult.letter !== lastSpokenGesture) {
             const stableLetter = aslResult.letter;
             const newWord = wordBuffer + stableLetter;
             setWordBuffer(newWord);
@@ -492,7 +493,7 @@ export function GestureRecognizer() {
             }
             
             setLastSpokenGesture(stableLetter);
-            setTimeout(() => setLastSpokenGesture(null), 500);
+            setTimeout(() => setLastSpokenGesture(null), 400);
           }
         }
       }

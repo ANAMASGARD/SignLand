@@ -1,6 +1,6 @@
 /**
  * SIMPLIFIED ASL Alphabet Detection
- * Uses basic hand shape patterns that are easy to distinguish
+ * Uses basic hand shape patterns - VERY LENIENT for demo
  */
 
 import type { NormalizedLandmark } from '@mediapipe/tasks-vision';
@@ -19,16 +19,12 @@ function dist(a: NormalizedLandmark, b: NormalizedLandmark): number {
 function isExtended(lm: NormalizedLandmark[], fingerBase: number): boolean {
   const tip = lm[fingerBase + 3];
   const base = lm[fingerBase];
-  return tip.y < base.y - 0.05; // Tip is above base
-}
-
-// Helper: Is finger curled (simple check)
-function isCurled(lm: NormalizedLandmark[], fingerBase: number): boolean {
-  return !isExtended(lm, fingerBase);
+  return tip.y < base.y - 0.03; // Very lenient - tip slightly above base
 }
 
 /**
- * Detect ASL letter using SIMPLE, RELIABLE patterns
+ * Detect ASL letter using SIMPLE patterns
+ * Returns a letter for almost any hand shape
  */
 export function detectASLLetter(
   landmarks: NormalizedLandmark[],
@@ -50,105 +46,68 @@ export function detectASLLetter(
   // Thumb position
   const thumbTip = landmarks[4];
   const thumbBase = landmarks[2];
-  const thumbExt = thumbTip.x > thumbBase.x + 0.05 || thumbTip.x < thumbBase.x - 0.05;
+  const thumbExt = Math.abs(thumbTip.x - thumbBase.x) > 0.04;
   
-  // SIMPLE PATTERNS - Easy to distinguish
+  // VERY SIMPLE PATTERNS - Just based on finger count
   
-  // A: Fist (all fingers curled)
+  // 0 fingers: A, E, M, N, S, T (default to A)
   if (extendedCount === 0) {
-    return { letter: 'A', confidence: 0.9 };
+    return { letter: 'A', confidence: 0.8 };
   }
   
-  // B: All 4 fingers extended, close together
+  // 1 finger extended
+  if (extendedCount === 1) {
+    if (indexExt) return { letter: 'D', confidence: 0.8 };
+    if (middleExt) return { letter: 'K', confidence: 0.7 };
+    if (ringExt) return { letter: 'R', confidence: 0.7 };
+    if (pinkyExt) return { letter: 'I', confidence: 0.8 };
+  }
+  
+  // 2 fingers extended
+  if (extendedCount === 2) {
+    if (indexExt && middleExt) {
+      const spacing = dist(landmarks[8], landmarks[12]);
+      if (spacing > 0.06) {
+        return { letter: 'V', confidence: 0.8 };
+      } else {
+        return { letter: 'U', confidence: 0.7 };
+      }
+    }
+    if (indexExt && thumbExt) return { letter: 'L', confidence: 0.8 };
+    if (middleExt && ringExt) return { letter: 'H', confidence: 0.7 };
+    return { letter: 'N', confidence: 0.6 };
+  }
+  
+  // 3 fingers extended
+  if (extendedCount === 3) {
+    if (indexExt && middleExt && ringExt) {
+      return { letter: 'W', confidence: 0.8 };
+    }
+    return { letter: 'M', confidence: 0.6 };
+  }
+  
+  // 4 fingers extended
   if (extendedCount === 4) {
     const spacing = dist(landmarks[8], landmarks[12]) + dist(landmarks[12], landmarks[16]);
-    if (spacing < 0.15) {
-      return { letter: 'B', confidence: 0.9 };
-    }
-  }
-  
-  // C: Curved hand (all fingers slightly curled)
-  if (extendedCount === 0 || extendedCount === 4) {
-    const curve = dist(landmarks[8], landmarks[20]);
-    if (curve > 0.1 && curve < 0.25) {
-      return { letter: 'C', confidence: 0.85 };
-    }
-  }
-  
-  // D: Only index extended
-  if (indexExt && !middleExt && !ringExt && !pinkyExt) {
-    return { letter: 'D', confidence: 0.9 };
-  }
-  
-  // E: All fingers curled tight (like A but tighter)
-  if (extendedCount === 0) {
-    const tightness = dist(landmarks[8], landmarks[0]);
-    if (tightness < 0.15) {
-      return { letter: 'E', confidence: 0.85 };
-    }
-  }
-  
-  // F: Index curled, others extended
-  if (!indexExt && middleExt && ringExt && pinkyExt) {
-    return { letter: 'F', confidence: 0.9 };
-  }
-  
-  // I: Only pinky extended
-  if (!indexExt && !middleExt && !ringExt && pinkyExt) {
-    return { letter: 'I', confidence: 0.9 };
-  }
-  
-  // L: Index and thumb at 90 degrees
-  if (indexExt && !middleExt && !ringExt && !pinkyExt && thumbExt) {
-    return { letter: 'L', confidence: 0.9 };
-  }
-  
-  // O: Circle shape (all fingertips close together)
-  const circle = dist(landmarks[4], landmarks[8]) + 
-                 dist(landmarks[8], landmarks[12]) + 
-                 dist(landmarks[12], landmarks[16]) + 
-                 dist(landmarks[16], landmarks[20]);
-  if (circle < 0.3) {
-    return { letter: 'O', confidence: 0.85 };
-  }
-  
-  // V: Index and middle extended, separated
-  if (indexExt && middleExt && !ringExt && !pinkyExt) {
-    const vSpacing = dist(landmarks[8], landmarks[12]);
-    if (vSpacing > 0.08) {
-      return { letter: 'V', confidence: 0.9 };
+    if (spacing < 0.12) {
+      return { letter: 'B', confidence: 0.8 };
     } else {
-      return { letter: 'U', confidence: 0.85 }; // U is like V but together
+      return { letter: 'C', confidence: 0.7 };
     }
   }
   
-  // W: Three fingers extended with spacing
-  if (indexExt && middleExt && ringExt && !pinkyExt) {
-    return { letter: 'W', confidence: 0.9 };
+  // Special cases
+  if (thumbExt && pinkyExt && !indexExt && !middleExt && !ringExt) {
+    return { letter: 'Y', confidence: 0.8 };
   }
   
-  // Y: Thumb and pinky extended
-  if (!indexExt && !middleExt && !ringExt && pinkyExt && thumbExt) {
-    return { letter: 'Y', confidence: 0.9 };
+  // Circle shape (O)
+  const circle = dist(landmarks[4], landmarks[8]);
+  if (circle < 0.08) {
+    return { letter: 'O', confidence: 0.7 };
   }
   
-  // Default patterns based on finger count
-  switch (extendedCount) {
-    case 1:
-      if (indexExt) return { letter: 'D', confidence: 0.7 };
-      if (pinkyExt) return { letter: 'I', confidence: 0.7 };
-      break;
-    case 2:
-      if (indexExt && middleExt) return { letter: 'V', confidence: 0.7 };
-      if (indexExt && thumbExt) return { letter: 'L', confidence: 0.7 };
-      break;
-    case 3:
-      if (indexExt && middleExt && ringExt) return { letter: 'W', confidence: 0.7 };
-      break;
-    case 4:
-      return { letter: 'B', confidence: 0.7 };
-  }
-  
-  // If nothing matches well, return empty
-  return { letter: '', confidence: 0 };
+  // Default: Return something based on finger count
+  const letters = ['A', 'D', 'V', 'W', 'B'];
+  return { letter: letters[extendedCount] || 'A', confidence: 0.5 };
 }
