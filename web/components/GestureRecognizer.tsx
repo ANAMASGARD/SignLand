@@ -50,7 +50,7 @@ export function GestureRecognizer() {
   const [lastRefinement, setLastRefinement] = useState<{ original: string; refined: string } | null>(null);
   
   // AI Vision Mode for ASL detection
-  const [useAIVision, setUseAIVision] = useState<boolean>(true); // Default to AI
+  const [useAIVision, setUseAIVision] = useState<boolean>(false); // Default OFF - user can enable
   const [isDetectingWithAI, setIsDetectingWithAI] = useState<boolean>(false);
   
   // Word builder state
