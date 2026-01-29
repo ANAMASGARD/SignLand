@@ -64,10 +64,25 @@ export function useSpeechSynthesis() {
       console.log('Available voices:', availableVoices.length);
       
       if (availableVoices.length > 0 && !options.voice) {
-        // Prefer local voices for better reliability
-        const localVoice = availableVoices.find(v => v.localService) || availableVoices[0];
-        utterance.voice = localVoice;
-        console.log('Using voice:', localVoice.name);
+        // If language specified, find voice for that language
+        if (options.lang) {
+          const langPrefix = options.lang.split('-')[0]; // e.g., 'en' from 'en-US'
+          const langVoice = availableVoices.find(v => 
+            v.lang.startsWith(langPrefix) && v.localService
+          ) || availableVoices.find(v => 
+            v.lang.startsWith(langPrefix)
+          );
+          
+          if (langVoice) {
+            utterance.voice = langVoice;
+            console.log('Using language voice:', langVoice.name, langVoice.lang);
+          }
+        } else {
+          // Prefer local voices for better reliability
+          const localVoice = availableVoices.find(v => v.localService) || availableVoices[0];
+          utterance.voice = localVoice;
+          console.log('Using voice:', localVoice.name);
+        }
       }
 
       // Apply options

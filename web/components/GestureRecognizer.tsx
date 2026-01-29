@@ -8,9 +8,12 @@ import { drawLandmarks } from '@/lib/mediapipe/drawLandmarks';
 import { detectASLLetter, type ASLDetectionResult } from '@/lib/mediapipe/aslAlphabet';
 import { detectControlGesture } from '@/lib/mediapipe/controlGestures';
 import { playBeep, playWhoosh } from '@/lib/audio/soundEffects';
-import { gestureToPhrase, letterToPhrase, formatSentence, shouldIncreasePitch, speakNaturally, enhanceWithContext, updateContext, clearContext, predictWord, trackWordUsage, saveToDictionary } from '@/lib/speech';
+import { gestureToPhrase, letterToPhrase, formatSentence, shouldIncreasePitch, speakNaturally, enhanceWithContext, updateContext, clearContext, predictWord, trackWordUsage, saveToDictionary, translateGesture, translateWord, loadLanguagePreference } from '@/lib/speech';
 import { ShimmerButton } from '@/components/ui/ShimmerButton';
 import { ComingSoonFeatures } from '@/components/ComingSoonFeatures';
+import { LanguageSelector } from '@/components/LanguageSelector';
+import { SmartModeToggle } from '@/components/SmartModeToggle';
+import { SmartModeResult } from '@/components/SmartModeResult';
 import type { GestureRecognizerResult, NormalizedLandmark } from '@mediapipe/tasks-vision';
 
 export function GestureRecognizer() {
@@ -34,6 +37,14 @@ export function GestureRecognizer() {
   const [currentPhrase, setCurrentPhrase] = useState<string>('');
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   
+  // Multilingual support
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('en-US');
+  
+  // Smart Mode state
+  const [smartModeEnabled, setSmartModeEnabled] = useState<boolean>(false);
+  const [isRefining, setIsRefining] = useState<boolean>(false);
+  const [lastRefinement, setLastRefinement] = useState<{ original: string; refined: string } | null>(null);
+  
   // Word builder state
   const [wordBuffer, setWordBuffer] = useState<string>('');
   const [sentenceBuffer, setSentenceBuffer] = useState<string[]>([]);
@@ -42,7 +53,7 @@ export function GestureRecognizer() {
   const [currentControlGesture, setCurrentControlGesture] = useState<string | null>(null);
   const [detectedLetter, setDetectedLetter] = useState<string>('');
   const [letterHistory, setLetterHistory] = useState<string[]>([]);
-  const [detectionMode, setDetectionMode] = useState<'gesture' | 'letter'>('gesture');
+  const [detectionMode, setDetectionMode] = useState<'gesture' | 'letter'>('letter');
   const [predictions, setPredictions] = useState<Array<{ word: string; confidence: number }>>([]);
   const [lastLetterTime, setLastLetterTime] = useState<number>(Date.now());
   const [showCommitSuccess, setShowCommitSuccess] = useState(false);
@@ -53,14 +64,61 @@ export function GestureRecognizer() {
   const lastFrameTimeRef = useRef<number>(0);
   const frameCountRef = useRef<number>(0);
 
-  // Commit word function
-  const commitWord = () => {
+  // Commit word function with Smart Mode support
+  const commitWord = async () => {
     if (!wordBuffer) return;
     
-    speak(wordBuffer, { rate: 1.0, pitch: 1.0, volume: 1.0 });
-    setSentenceBuffer(prev => [...prev, wordBuffer]);
-    trackWordUsage(wordBuffer, false);
-    playWhoosh();
+    if (smartModeEnabled) {
+      // Smart Mode: Refine with Gemini AI
+      setIsRefining(true);
+      try {
+        const originalTokens = sentenceBuffer.concat(wordBuffer).join(' ');
+        const response = await fetch('/api/refine', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tokens: sentenceBuffer.concat(wordBuffer),
+            context: sentenceBuffer.slice(-3), // Last 3 words as context
+            language: selectedLanguage,
+          }),
+        });
+
+        if (!response.ok) throw new Error('Refinement failed');
+
+        const result = await response.json();
+        const refinedText = result.refined;
+
+        // Show the AI refinement visually
+        setLastRefinement({ original: originalTokens, refined: refinedText });
+        
+        speak(refinedText, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
+        setSentenceBuffer(prev => [...prev, wordBuffer]);
+        trackWordUsage(wordBuffer, false);
+        playWhoosh();
+        setCurrentPhrase(`✨ ${refinedText}`);
+        
+        // Hide refinement after 8 seconds
+        setTimeout(() => setLastRefinement(null), 8000);
+      } catch (error) {
+        console.error('Smart Mode error:', error);
+        // Fallback to regular mode
+        const translatedWord = translateWord(wordBuffer, selectedLanguage);
+        speak(translatedWord, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
+        setCurrentPhrase(`⚠️ ${translatedWord} (fallback)`);
+        setLastRefinement(null);
+      } finally {
+        setIsRefining(false);
+      }
+    } else {
+      // Fast Mode: Direct translation
+      const translatedWord = translateWord(wordBuffer, selectedLanguage);
+      speak(translatedWord, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
+      setSentenceBuffer(prev => [...prev, wordBuffer]);
+      trackWordUsage(wordBuffer, false);
+      playWhoosh();
+      setLastRefinement(null); // Clear any previous refinement
+      setCurrentPhrase(`✓ ${translatedWord}`);
+    }
     
     // Success animation
     setShowCommitSuccess(true);
@@ -71,7 +129,6 @@ export function GestureRecognizer() {
     
     setWordBuffer('');
     setPredictions([]);
-    setCurrentPhrase(`✓ ${wordBuffer}`);
   };
 
   // Initialize lastFrameTimeRef on mount
@@ -374,41 +431,27 @@ export function GestureRecognizer() {
         const handedness = results.handednesses?.[0]?.[0]?.categoryName || 'Right';
         const aslResult = detectASLLetter(landmarks, handedness);
         
-        // Add to stabilization buffer
-        if (aslResult.letter && aslResult.confidence > 0) {
-          letterBufferRef.current.push(aslResult);
-          if (letterBufferRef.current.length > 3) {
-            letterBufferRef.current.shift();
+        // Debug logging
+        if (aslResult.letter) {
+          console.log('Detected:', aslResult.letter, 'Confidence:', aslResult.confidence.toFixed(2));
+        }
+        
+        // Immediate detection with single frame (for testing/debugging)
+        if (aslResult.letter && aslResult.confidence > 0.30 && aslResult.letter !== lastSpokenGesture) {
+          const stableLetter = aslResult.letter;
+          const newWord = wordBuffer + stableLetter;
+          setWordBuffer(newWord);
+          setLastLetterTime(Date.now());
+          setDetectedLetter(stableLetter);
+          playBeep();
+          
+          // Update predictions if 3+ letters
+          if (newWord.length >= 3) {
+            setPredictions(predictWord(newWord));
           }
           
-          // Require 2 out of last 3 frames to agree (faster response)
-          if (letterBufferRef.current.length >= 2) {
-            const letterCounts: Record<string, number> = {};
-            letterBufferRef.current.forEach(r => {
-              letterCounts[r.letter] = (letterCounts[r.letter] || 0) + 1;
-            });
-            
-            const mostCommon = Object.entries(letterCounts)
-              .sort((a, b) => b[1] - a[1])[0];
-            
-            // If 2+ frames agree on same letter
-            if (mostCommon && mostCommon[1] >= 2 && mostCommon[0] !== lastSpokenGesture) {
-              const stableLetter = mostCommon[0];
-              const newWord = wordBuffer + stableLetter;
-              setWordBuffer(newWord);
-              setLastLetterTime(Date.now());
-              playBeep();
-              
-              // Update predictions if 3+ letters
-              if (newWord.length >= 3) {
-                setPredictions(predictWord(newWord));
-              }
-              
-              setLastSpokenGesture(stableLetter);
-              letterBufferRef.current = []; // Clear buffer after detection
-              setTimeout(() => setLastSpokenGesture(null), 800);
-            }
-          }
+          setLastSpokenGesture(stableLetter);
+          setTimeout(() => setLastSpokenGesture(null), 600);
         }
       }
     }
@@ -422,15 +465,17 @@ export function GestureRecognizer() {
         const phrase = gestureToPhrase(gestureName);
         
         if (phrase) {
-          setCurrentPhrase(phrase);
-          speak(phrase, { rate: 1.0, pitch: 1.0, volume: 1.0 });
+          // Translate gesture to selected language
+          const translatedPhrase = translateGesture(phrase, selectedLanguage);
+          setCurrentPhrase(translatedPhrase);
+          speak(translatedPhrase, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
           setLastSpokenGesture(gestureName);
           
           setTimeout(() => setLastSpokenGesture(null), 2000);
         }
       }
     }
-  }, [results, isRunning, audioUnlocked, lastSpokenGesture, speak, detectionMode, wordBuffer, sentenceBuffer, controlGestureHoldStart, currentControlGesture]);
+  }, [results, isRunning, audioUnlocked, lastSpokenGesture, speak, detectionMode, wordBuffer, sentenceBuffer, controlGestureHoldStart, currentControlGesture, selectedLanguage]);
 
   const isLoading = cameraLoading || mediapipeLoading;
   const error = cameraError || mediapipeError;
@@ -505,56 +550,78 @@ export function GestureRecognizer() {
               </button>
             </div>
 
-            {/* Start/Stop Controls */}
-            <div className="flex justify-center gap-3">{!isRunning ? (
-              <ShimmerButton
+            {/* Language Selector, Smart Mode, and Start/Stop Controls */}
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
+              {/* Language Selector */}
+              <LanguageSelector onLanguageChange={setSelectedLanguage} />
+              
+              {/* Smart Mode Toggle */}
+              {isRunning && (
+                <SmartModeToggle 
+                  enabled={smartModeEnabled} 
+                  onToggle={setSmartModeEnabled}
+                  isRefining={isRefining}
+                />
+              )}
+              
+              {/* Start/Stop Controls */}
+              {!isRunning ? (
+              <button
                 onClick={handleStart}
                 disabled={isLoading}
-                background="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                className="group relative px-6 py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
               >
-                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
-                {isLoading ? 'Initializing...' : 'Start Camera'}
-              </ShimmerButton>
+                <span className="text-sm">{isLoading ? 'Initializing...' : 'Start Camera'}</span>
+              </button>
             ) : (
               <>
-                <ShimmerButton
+                <button
                   onClick={handleStop}
-                  background="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+                  className="group relative px-6 py-2.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-medium"
                 >
-                  <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                </svg>
-                Stop Camera
-              </ShimmerButton>
+                  </svg>
+                  <span className="text-sm">Stop Camera</span>
+                </button>
               
               {!audioUnlocked && (
-                <ShimmerButton
+                <button
                   onClick={handleUnlockAudio}
-                  background="linear-gradient(135deg, #4ade80 0%, #22c55e 100%)"
+                  className="group relative px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 font-medium"
                 >
-                  <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                   </svg>
-                  Enable Audio
-                </ShimmerButton>
+                  <span className="text-sm">Enable Audio</span>
+                </button>
               )}
               
               {audioUnlocked && (
-                <div className="px-4 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <div className="px-4 py-2.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 rounded-xl text-sm font-medium flex items-center gap-2 border border-green-200 shadow-sm">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Audio Enabled
+                  <span>Audio Enabled</span>
                 </div>
               )}
             </>
             )}
           </div>
           </div>
+
+          {/* Smart Mode AI Refinement Result */}
+          {smartModeEnabled && lastRefinement && (
+            <SmartModeResult
+              originalTokens={lastRefinement.original}
+              refinedText={lastRefinement.refined}
+              isVisible={true}
+            />
+          )}
 
           {/* Word Builder Display */}
           {detectionMode === 'letter' && (

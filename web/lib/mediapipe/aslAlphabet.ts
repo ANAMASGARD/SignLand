@@ -83,10 +83,10 @@ function detectA(lm: NormalizedLandmark[]): number {
   // A: Fist with thumb on side
   const checks = [];
   checks.push(isFist(lm));
-  checks.push(dist(lm[4], lm[5]) < 0.15);
-  checks.push(lm[4].x > lm[5].x - 0.08); // Thumb on side
+  checks.push(dist(lm[4], lm[5]) < 0.18);
+  checks.push(lm[4].x > lm[5].x - 0.10); // Thumb on side
   const passed = checks.filter(Boolean).length;
-  return passed >= 2 ? 0.90 : 0;
+  return passed >= 2 ? 0.95 : (passed >= 1 ? 0.70 : 0);
 }
 
 function detectB(lm: NormalizedLandmark[]): number {
@@ -96,7 +96,7 @@ function detectB(lm: NormalizedLandmark[]): number {
   checks.push(areTogether(lm, 5, 9) && areTogether(lm, 9, 13));
   checks.push(dist(lm[4], lm[5]) < dist(lm[4], lm[17])); // Thumb across
   const passed = checks.filter(Boolean).length;
-  return passed >= 2 ? 0.92 : 0;
+  return passed >= 2 ? 0.95 : (passed >= 1 ? 0.70 : 0);
 }
 
 function detectC(lm: NormalizedLandmark[]): number {
@@ -104,10 +104,10 @@ function detectC(lm: NormalizedLandmark[]): number {
   const checks = [];
   const curved = !isExt(lm, 5) && !isCurl(lm, 5);
   checks.push(curved);
-  checks.push(dist(lm[4], lm[8]) > 0.08 && dist(lm[4], lm[8]) < 0.25);
+  checks.push(dist(lm[4], lm[8]) > 0.06 && dist(lm[4], lm[8]) < 0.30);
   checks.push(lm[8].x < lm[4].x); // Opening faces left/right
   const passed = checks.filter(Boolean).length;
-  return passed >= 2 ? 0.88 : 0;
+  return passed >= 2 ? 0.92 : (passed >= 1 ? 0.68 : 0);
 }
 
 function detectD(lm: NormalizedLandmark[]): number {
@@ -117,7 +117,7 @@ function detectD(lm: NormalizedLandmark[]): number {
   checks.push(dist(lm[4], lm[10]) < 0.12 || dist(lm[4], lm[12]) < 0.15);
   checks.push(lm[8].y < lm[5].y - 0.03); // Index pointing up
   const passed = checks.filter(Boolean).length;
-  return passed >= 3 ? 0.93 : (passed >= 2 ? 0.70 : 0);
+  return passed >= 3 ? 0.93 : (passed >= 2 ? 0.75 : (passed >= 1 ? 0.55 : 0));
 }
 
 function detectE(lm: NormalizedLandmark[]): number {
@@ -126,7 +126,7 @@ function detectE(lm: NormalizedLandmark[]): number {
   checks.push(isFist(lm));
   checks.push(dist(lm[4], lm[8]) < 0.10);
   const passed = checks.filter(Boolean).length;
-  return passed >= 2 ? 0.88 : 0;
+  return passed >= 2 ? 0.88 : (passed >= 1 ? 0.65 : 0);
 }
 
 function detectF(lm: NormalizedLandmark[]): number {
@@ -135,7 +135,7 @@ function detectF(lm: NormalizedLandmark[]): number {
   checks.push(isCurl(lm, 5) && isExt(lm, 9) && isExt(lm, 13) && isExt(lm, 17));
   checks.push(dist(lm[4], lm[8]) < 0.10);
   const passed = checks.filter(Boolean).length;
-  return passed >= 2 ? 0.90 : 0;
+  return passed >= 2 ? 0.90 : (passed >= 1 ? 0.65 : 0);
 }
 
 function detectG(lm: NormalizedLandmark[]): number {
@@ -145,7 +145,7 @@ function detectG(lm: NormalizedLandmark[]): number {
   checks.push(isThumbExt(lm));
   checks.push(Math.abs(lm[8].y - lm[4].y) < 0.12); // Horizontal
   const passed = checks.filter(Boolean).length;
-  return passed >= 2 ? 0.87 : 0;
+  return passed >= 2 ? 0.87 : (passed >= 1 ? 0.60 : 0);
 }
 
 function detectH(lm: NormalizedLandmark[]): number {
@@ -155,7 +155,7 @@ function detectH(lm: NormalizedLandmark[]): number {
   checks.push(dist(lm[8], lm[12]) < 0.06); // Very close together
   checks.push(Math.abs(lm[8].y - lm[12].y) < 0.04); // Horizontal
   const passed = checks.filter(Boolean).length;
-  return passed >= 3 ? 0.92 : (passed >= 2 ? 0.68 : 0);
+  return passed >= 3 ? 0.92 : (passed >= 2 ? 0.68 : (passed >= 1 ? 0.50 : 0));
 }
 
 function detectI(lm: NormalizedLandmark[]): number {
@@ -164,11 +164,11 @@ function detectI(lm: NormalizedLandmark[]): number {
   checks.push(isCurl(lm, 5) && isCurl(lm, 9) && isCurl(lm, 13) && isExt(lm, 17));
   checks.push(dist(lm[4], lm[5]) < dist(lm[4], lm[17]));
   const passed = checks.filter(Boolean).length;
-  return passed >= 2 ? 0.91 : 0;
+  return passed >= 2 ? 0.91 : (passed >= 1 ? 0.65 : 0);
 }
 
 function detectJ(lm: NormalizedLandmark[]): number {
-  return detectI(lm) * 0.7;
+  return detectI(lm) * 0.8;
 }
 
 function detectK(lm: NormalizedLandmark[]): number {
@@ -178,7 +178,7 @@ function detectK(lm: NormalizedLandmark[]): number {
   checks.push(dist(lm[8], lm[12]) > 0.08); // V shape
   checks.push(lm[4].y > lm[8].y && lm[4].y < lm[12].y); // Thumb between
   const passed = checks.filter(Boolean).length;
-  return passed >= 2 ? 0.87 : 0;
+  return passed >= 2 ? 0.87 : (passed >= 1 ? 0.60 : 0);
 }
 
 function detectL(lm: NormalizedLandmark[]): number {
@@ -189,7 +189,7 @@ function detectL(lm: NormalizedLandmark[]): number {
   const angle = getAngle(lm[4], lm[2], lm[8]);
   checks.push(angle >= 75 && angle <= 105); // ~90 degrees
   const passed = checks.filter(Boolean).length;
-  return passed >= 3 ? 0.91 : (passed >= 2 ? 0.65 : 0);
+  return passed >= 3 ? 0.91 : (passed >= 2 ? 0.65 : (passed >= 1 ? 0.48 : 0));
 }
 
 function detectM(lm: NormalizedLandmark[]): number {
@@ -199,7 +199,7 @@ function detectM(lm: NormalizedLandmark[]): number {
   checks.push(lm[4].y > lm[8].y - 0.02); // Thumb under fingertips
   checks.push(dist(lm[8], lm[12]) < 0.07 && dist(lm[12], lm[16]) < 0.07); // Close together
   const passed = checks.filter(Boolean).length;
-  return passed >= 3 ? 0.89 : (passed >= 2 ? 0.60 : 0);
+  return passed >= 3 ? 0.89 : (passed >= 2 ? 0.60 : (passed >= 1 ? 0.45 : 0));
 }
 
 function detectN(lm: NormalizedLandmark[]): number {
@@ -209,7 +209,7 @@ function detectN(lm: NormalizedLandmark[]): number {
   checks.push(lm[4].y > lm[8].y - 0.02); // Thumb under
   checks.push(dist(lm[8], lm[12]) < 0.07); // Close together
   const passed = checks.filter(Boolean).length;
-  return passed >= 3 ? 0.88 : (passed >= 2 ? 0.58 : 0);
+  return passed >= 3 ? 0.88 : (passed >= 2 ? 0.58 : (passed >= 1 ? 0.42 : 0));
 }
 
 function detectO(lm: NormalizedLandmark[]): number {
@@ -219,41 +219,32 @@ function detectO(lm: NormalizedLandmark[]): number {
   checks.push(dist(lm[4], lm[12]) < 0.14);
   checks.push(dist(lm[4], lm[16]) < 0.16);
   const passed = checks.filter(Boolean).length;
-  return passed >= 2 ? 0.90 : 0;
+  return passed >= 2 ? 0.90 : (passed >= 1 ? 0.60 : 0);
 }
 
 function detectP(lm: NormalizedLandmark[]): number {
   const shape = isExt(lm, 5) && isExt(lm, 9) && isCurl(lm, 13) && isCurl(lm, 17);
   const down = lm[8].y > lm[0].y;
-  return shape && down ? 0.8 : 0;
+  return shape && down ? 0.8 : (shape ? 0.55 : 0);
 }
 
 function detectQ(lm: NormalizedLandmark[]): number {
   const shape = isExt(lm, 5) && isCurl(lm, 9) && isCurl(lm, 13) && isCurl(lm, 17);
   const down = lm[8].y > lm[0].y;
-  return shape && isThumbExt(lm) && down ? 0.8 : 0;
+  return shape && isThumbExt(lm) && down ? 0.8 : (shape && isThumbExt(lm) ? 0.55 : 0);
 }
 
 function detectR(lm: NormalizedLandmark[]): number {
   // R: Index and middle crossed
   const checks = [];
-  
-  // Check 1: Index and middle extended
   checks.push(isExt(lm, 5) && isExt(lm, 9));
-  
-  // Check 2: Ring and pinky curled
   checks.push(isCurl(lm, 13) && isCurl(lm, 17));
-  
-  // Check 3: Fingers crossed (index over middle)
   const crossed = lm[8].x > lm[12].x && lm[6].x < lm[10].x;
   checks.push(crossed);
-  
-  // Check 4: Calculate cross point
-  const crossDist = dist(lm[7], lm[11]); // DIP joints close
+  const crossDist = dist(lm[7], lm[11]);
   checks.push(crossDist < 0.05);
-  
   const passed = checks.filter(Boolean).length;
-  return passed >= 3 ? 0.85 : (passed >= 2 ? 0.6 : 0);
+  return passed >= 3 ? 0.85 : (passed >= 2 ? 0.6 : (passed >= 1 ? 0.45 : 0));
 }
 
 function detectS(lm: NormalizedLandmark[]): number {
@@ -261,9 +252,9 @@ function detectS(lm: NormalizedLandmark[]): number {
   const checks = [];
   checks.push(isFist(lm));
   checks.push(dist(lm[4], lm[5]) < 0.14 && dist(lm[4], lm[9]) < 0.14);
-  checks.push(lm[4].z < lm[5].z + 0.02); // Thumb in front
+  checks.push(lm[4].z < lm[5].z + 0.02);
   const passed = checks.filter(Boolean).length;
-  return passed >= 2 ? 0.87 : 0;
+  return passed >= 2 ? 0.87 : (passed >= 1 ? 0.60 : 0);
 }
 
 function detectT(lm: NormalizedLandmark[]): number {
@@ -271,9 +262,9 @@ function detectT(lm: NormalizedLandmark[]): number {
   const checks = [];
   checks.push(isCurl(lm, 5) && isCurl(lm, 9) && isCurl(lm, 13) && isCurl(lm, 17));
   checks.push(dist(lm[4], lm[8]) < 0.12 && dist(lm[4], lm[12]) < 0.12);
-  checks.push(lm[4].y < lm[5].y); // Thumb sticking up
+  checks.push(lm[4].y < lm[5].y);
   const passed = checks.filter(Boolean).length;
-  return passed >= 2 ? 0.86 : 0;
+  return passed >= 2 ? 0.86 : (passed >= 1 ? 0.58 : 0);
 }
 
 function detectU(lm: NormalizedLandmark[]): number {
@@ -283,7 +274,7 @@ function detectU(lm: NormalizedLandmark[]): number {
   checks.push(dist(lm[8], lm[12]) < 0.06); // Very close
   checks.push(Math.abs(lm[8].y - lm[12].y) < 0.04); // Parallel
   const passed = checks.filter(Boolean).length;
-  return passed >= 3 ? 0.91 : (passed >= 2 ? 0.65 : 0);
+  return passed >= 3 ? 0.91 : (passed >= 2 ? 0.65 : (passed >= 1 ? 0.48 : 0));
 }
 
 function detectV(lm: NormalizedLandmark[]): number {
@@ -293,7 +284,7 @@ function detectV(lm: NormalizedLandmark[]): number {
   checks.push(dist(lm[8], lm[12]) > 0.07); // Apart
   checks.push(lm[8].y < lm[5].y && lm[12].y < lm[9].y); // Pointing up
   const passed = checks.filter(Boolean).length;
-  return passed >= 3 ? 0.92 : (passed >= 2 ? 0.67 : 0);
+  return passed >= 3 ? 0.92 : (passed >= 2 ? 0.67 : (passed >= 1 ? 0.50 : 0));
 }
 
 function detectW(lm: NormalizedLandmark[]): number {
@@ -303,13 +294,13 @@ function detectW(lm: NormalizedLandmark[]): number {
   checks.push(dist(lm[8], lm[12]) > 0.05 && dist(lm[12], lm[16]) > 0.05); // Spacing
   checks.push(lm[8].y < lm[5].y && lm[16].y < lm[13].y); // Pointing up
   const passed = checks.filter(Boolean).length;
-  return passed >= 3 ? 0.90 : (passed >= 2 ? 0.64 : 0);
+  return passed >= 3 ? 0.90 : (passed >= 2 ? 0.64 : (passed >= 1 ? 0.47 : 0));
 }
 
 function detectX(lm: NormalizedLandmark[]): number {
   const othersCurl = isCurl(lm, 9) && isCurl(lm, 13) && isCurl(lm, 17);
   const hooked = dist(lm[8], lm[5]) < dist(lm[6], lm[5]) * 1.5;
-  return othersCurl && hooked ? 0.8 : 0;
+  return othersCurl && hooked ? 0.8 : (othersCurl ? 0.55 : 0);
 }
 
 function detectY(lm: NormalizedLandmark[]): number {
@@ -319,7 +310,7 @@ function detectY(lm: NormalizedLandmark[]): number {
   checks.push(isThumbExt(lm));
   checks.push(dist(lm[4], lm[20]) > 0.15); // Thumb and pinky apart
   const passed = checks.filter(Boolean).length;
-  return passed >= 2 ? 0.92 : 0;
+  return passed >= 2 ? 0.92 : (passed >= 1 ? 0.65 : 0);
 }
 
 function detectZ(lm: NormalizedLandmark[]): number {
@@ -329,7 +320,7 @@ function detectZ(lm: NormalizedLandmark[]): number {
   checks.push(Math.abs(lm[8].x - lm[5].x) > Math.abs(lm[8].y - lm[5].y)); // Pointing sideways
   checks.push(!(lm[8].y < lm[5].y - 0.06)); // NOT pointing straight up
   const passed = checks.filter(Boolean).length;
-  return passed >= 3 ? 0.88 : (passed >= 2 ? 0.65 : 0);
+  return passed >= 3 ? 0.88 : (passed >= 2 ? 0.65 : (passed >= 1 ? 0.48 : 0));
 }
 
 /**
@@ -382,12 +373,11 @@ export function detectASLLetter(
   const best = sorted[0];
   const second = sorted[1];
   
-  // Require clear winner: best must be higher than second (reduced margin for speed)
-  const clearWinner = best.confidence > second.confidence + 0.10;
+  // Very lenient - accept if any reasonable confidence
+  const clearWinner = best.confidence > second.confidence + 0.03;
   
-  // Lower minimum confidence for faster detection
-  const difficultLetters = ['M', 'N', 'R', 'S', 'T'];
-  const minConfidence = difficultLetters.includes(best.letter) ? 0.50 : 0.60;
+  // Very low threshold - accept 35% confidence
+  const minConfidence = 0.35;
   
   if (best.confidence < minConfidence || !clearWinner) {
     return { letter: '', confidence: 0 };
