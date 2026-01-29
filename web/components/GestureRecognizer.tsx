@@ -7,6 +7,8 @@ import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { drawLandmarks } from '@/lib/mediapipe/drawLandmarks';
 import { detectASLLetter, type ASLDetectionResult } from '@/lib/mediapipe/aslAlphabet';
 import { detectControlGesture } from '@/lib/mediapipe/controlGestures';
+import { detectASLPhrase } from '@/lib/mediapipe/aslPhrases';
+import { createMotionHistory, addFrame, type MotionHistory } from '@/lib/mediapipe/motionTracker';
 import { playBeep, playWhoosh } from '@/lib/audio/soundEffects';
 import { gestureToPhrase, letterToPhrase, formatSentence, shouldIncreasePitch, speakNaturally, enhanceWithContext, updateContext, clearContext, predictWord, trackWordUsage, saveToDictionary, translateGesture, translateWord, loadLanguagePreference } from '@/lib/speech';
 import { ShimmerButton } from '@/components/ui/ShimmerButton';
@@ -24,6 +26,7 @@ export function GestureRecognizer() {
   const detectGesturesRef = useRef<(() => void) | null>(null);
   const previousLandmarksRef = useRef<NormalizedLandmark[] | null>(null);
   const previousTimeRef = useRef<number>(0);
+  const motionHistoryRef = useRef<MotionHistory>(createMotionHistory(30));
 
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<GestureRecognizerResult | null>(null);
@@ -455,23 +458,44 @@ export function GestureRecognizer() {
         }
       }
     }
-    // Gesture mode - original behavior
-    else if (detectionMode === 'gesture' && results.gestures?.[0]?.[0]) {
-      const gesture = results.gestures[0][0];
-      const gestureName = gesture.categoryName;
-      const confidence = gesture.score;
-
-      if (confidence > 0.7 && gestureName !== lastSpokenGesture) {
-        const phrase = gestureToPhrase(gestureName);
+    // Gesture mode - check motion phrases first, then static gestures
+    else if (detectionMode === 'gesture') {
+      // Add current frame to motion history
+      if (results.landmarks?.[0]) {
+        addFrame(motionHistoryRef.current, results.landmarks[0]);
         
-        if (phrase) {
-          // Translate gesture to selected language
-          const translatedPhrase = translateGesture(phrase, selectedLanguage);
-          setCurrentPhrase(translatedPhrase);
+        // Check for motion-based phrases (HELLO, THANK YOU, PLEASE)
+        const phraseResult = detectASLPhrase(results.landmarks[0], motionHistoryRef.current);
+        
+        if (phraseResult && phraseResult.phrase !== lastSpokenGesture) {
+          const translatedPhrase = translateGesture(phraseResult.phrase, selectedLanguage);
+          setCurrentPhrase(`👋 ${translatedPhrase}`);
           speak(translatedPhrase, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
-          setLastSpokenGesture(gestureName);
+          setLastSpokenGesture(phraseResult.phrase);
+          playWhoosh();
           
-          setTimeout(() => setLastSpokenGesture(null), 2000);
+          setTimeout(() => setLastSpokenGesture(null), 3000);
+        }
+      }
+      
+      // Check static gestures if no motion phrase detected
+      if (results.gestures?.[0]?.[0] && !lastSpokenGesture) {
+        const gesture = results.gestures[0][0];
+        const gestureName = gesture.categoryName;
+        const confidence = gesture.score;
+
+        if (confidence > 0.7 && gestureName !== lastSpokenGesture) {
+          const phrase = gestureToPhrase(gestureName);
+          
+          if (phrase) {
+            // Translate gesture to selected language
+            const translatedPhrase = translateGesture(phrase, selectedLanguage);
+            setCurrentPhrase(translatedPhrase);
+            speak(translatedPhrase, { rate: 1.0, pitch: 1.0, volume: 1.0, lang: selectedLanguage });
+            setLastSpokenGesture(gestureName);
+            
+            setTimeout(() => setLastSpokenGesture(null), 2000);
+          }
         }
       }
     }
