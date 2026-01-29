@@ -450,6 +450,10 @@ export function GestureRecognizer() {
                 setDetectedLetter(stableLetter);
                 playBeep();
                 
+                // Speak the letter immediately
+                speak(stableLetter, { rate: 1.1, pitch: 1.0, volume: 1.0 });
+                setCurrentPhrase(stableLetter);
+                
                 console.log('🤖 AI DETECTED:', stableLetter, '→ Word:', newWord);
                 
                 // Update predictions
@@ -485,6 +489,10 @@ export function GestureRecognizer() {
             setLastLetterTime(Date.now());
             setDetectedLetter(stableLetter);
             playBeep();
+            
+            // Speak the letter immediately in a natural way
+            speak(stableLetter, { rate: 1.1, pitch: 1.0, volume: 1.0 });
+            setCurrentPhrase(stableLetter);
             
             console.log('✅ ADDED:', stableLetter, '→ Word:', newWord);
             
@@ -996,13 +1004,29 @@ export function GestureRecognizer() {
               </div>
             )}
 
-            {isRunning && results?.gestures && results.gestures.length > 0 && (
+            {isRunning && results?.landmarks && results.landmarks.length > 0 && (
               <div className="space-y-3 md:space-y-4">
-                {results.gestures.map((handGestures, handIndex) => {
-                  const gesture = handGestures[0];
+                {results.landmarks.map((landmarks, handIndex) => {
                   const handedness = results.handedness?.[handIndex]?.[0];
-
-                  if (!gesture) return null;
+                  
+                  // In letter mode, detect and show ASL letter
+                  let displayText = 'Detecting...';
+                  let confidence = 0;
+                  
+                  if (detectionMode === 'letter') {
+                    const aslResult = detectASLLetter(landmarks, handedness?.categoryName || 'Right');
+                    if (aslResult.letter) {
+                      displayText = `Letter: ${aslResult.letter}`;
+                      confidence = aslResult.confidence;
+                    }
+                  } else {
+                    // Gesture mode - show MediaPipe gesture
+                    const gesture = results.gestures?.[handIndex]?.[0];
+                    if (gesture) {
+                      displayText = gesture.categoryName.replace('_', ' ');
+                      confidence = gesture.score;
+                    }
+                  }
 
                   return (
                     <div key={handIndex} className="p-4 md:p-5 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl border-2 border-purple-200 shadow-lg transform transition-all hover:scale-105">
@@ -1019,18 +1043,18 @@ export function GestureRecognizer() {
                       </div>
 
                       <div className="text-2xl md:text-3xl font-bold text-purple-600 mb-3">
-                        {gesture.categoryName.replace('_', ' ')}
+                        {displayText}
                       </div>
 
                       <div className="flex items-center gap-3">
                         <div className="flex-1 bg-gray-200 rounded-full h-2.5 md:h-3 overflow-hidden">
                           <div
                             className="bg-gradient-to-r from-purple-600 to-blue-600 h-full rounded-full transition-all duration-300 ease-out"
-                            style={{ width: `${gesture.score * 100}%` }}
+                            style={{ width: `${confidence * 100}%` }}
                           />
                         </div>
                         <span className="text-base md:text-lg font-bold text-gray-700 min-w-[3rem] text-right">
-                          {Math.round(gesture.score * 100)}%
+                          {Math.round(confidence * 100)}%
                         </span>
                       </div>
                     </div>
