@@ -2,49 +2,31 @@
 
 🗣️ **Empowering non-verbal communication through AI** - A privacy-first, real-time gesture recognition app that converts sign language into spoken audio using only a webcam and speakers.
 
-[![Demo Video](https://img.shields.io/badge/Demo-Watch%20Video-red)](https://youtube.com/your-demo-video)
 [![Live Demo](https://img.shields.io/badge/Live-Try%20It-blue)](https://your-amplify-url.amplifyapp.com)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-> **📖 New to Kiro?** Check out [kiro-guide.md](kiro-guide.md) to quickly get accustomed to how Kiro works and understand its unique features for the hackathon.
+## What is SignLand?
 
-## About SignLand
+SignLand helps mute and non-verbal individuals communicate naturally using hand gestures. Point your webcam, make ASL signs, and hear them spoken instantly - all running locally in your browser with complete privacy.
 
-SignLand is a real-time sign language to speech communication tool that empowers mute and non-verbal individuals to communicate naturally using only their webcam and speakers. The app converts hand gestures and signs into spoken audio instantly, with a strong focus on privacy, low latency, and offline-first operation.
+### ✨ Key Features
 
-### Key Features
-
-- **Real-time Gesture Recognition**: MediaPipe-powered hand gesture detection running locally in the browser
-- **Instant Speech Output**: Browser-native text-to-speech for immediate audio feedback
-- **Offline-First Fast Mode**: Complete gesture-to-speech pipeline runs locally without internet
-- **Smart Interpreter Mode**: Optional online mode that refines gesture tokens into natural language using Gemini AI
-- **Privacy-First Design**: No video upload - webcam stream never leaves the device in Fast Mode
-- **Multilingual Support**: Choose output language and voice for speech synthesis
-
-### Technology Stack
-
-- **Frontend**: Next.js 14+ (App Router) with React 18+ and TypeScript
-- **AI & Computer Vision**: MediaPipe Tasks Vision (WASM) for client-side gesture recognition
-- **Speech**: Web Speech API (SpeechSynthesis) for browser-native text-to-speech
-- **Authentication**: Clerk for user authentication and session management
-- **Optional AI**: Google Gemini API for text refinement in Smart Mode
-- **Deployment**: AWS Amplify with monorepo support
+- **🔤 ASL Alphabet Detection**: Spell words letter-by-letter with all 26 ASL letters
+- **🎯 Gesture Recognition**: 7 common phrases (thumbs up/down, peace, stop, etc.)
+- **🗣️ Instant Speech**: Hear letters and words spoken immediately
+- **🌍 10 Languages**: English, Spanish, French, German, Italian, Portuguese, Hindi, Mandarin, Japanese, Arabic
+- **🤖 Smart Mode**: AI-powered natural language refinement with Gemini
+- **🔒 Privacy-First**: All processing happens locally - no video upload
+- **⚡ Real-Time**: Sub-second latency from gesture to speech
+- **📱 Works Everywhere**: Desktop and mobile browsers
 
 ## Quick Start
 
-### Prerequisites
-
-- **Node.js** 18+ (LTS recommended)
-- **npm** or **pnpm** for package management
-- **Git** for version control
-- **Modern browser** with webcam support (Chrome, Firefox, Safari)
-- **Kiro CLI** installed and authenticated
-
-### 1. Clone and Setup
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/dynamous-kiro-hackathon
-cd dynamous-kiro-hackathon
+git clone https://github.com/ANAMASGARD/SignLand.git
+cd SignLand
 ```
 
 ### 2. Install Dependencies
@@ -54,187 +36,202 @@ cd web
 npm install
 ```
 
-### 3. Configure Environment
+### 3. Set Up Environment Variables
 
 ```bash
 cp .env.example .env.local
 ```
 
-Edit `.env.local` with your credentials:
+Edit `.env.local` with your keys:
 
 ```bash
-# Clerk Authentication (Required)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
+# Required: Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
+CLERK_SECRET_KEY=your_clerk_secret
 
-# Gemini API (Optional - for Smart Mode)
-GEMINI_API_KEY=...
-
-# App Configuration
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+# Optional: For Smart Mode
+GEMINI_API_KEY=your_gemini_key
 ```
 
-### 4. Run Development Server
+### 4. Run the App
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000) and start signing!
 
-### 5. Customize 3D Model (Optional)
+## How to Use
 
-To replace the hero 3D model:
+### ASL Alphabet Mode (Spell Words)
 
-1. Place your `.glb` file in `web/public/` (e.g., `hero.glb`)
-2. Update the path in `web/components/landing/HeroModel.tsx`:
-   ```typescript
-   const { scene } = useGLTF('/your-model.glb');
-   ```
-3. Adjust scale and position as needed
+1. Click **"ASL Alphabet"** button
+2. Click **"Enable Audio"** to unlock speech
+3. Click **"Start Camera"**
+4. Sign letters using ASL alphabet
+5. Hear each letter spoken as you sign
+6. Words auto-complete after 3 seconds
 
-### 6. Start Using Kiro CLI
+### Gesture Mode (Quick Phrases)
 
-From the project root (not `/web`):
+1. Click **"Gesture Mode"** button
+2. Make gestures like thumbs up, peace sign, stop hand
+3. Hear phrases spoken instantly
 
-```bash
-kiro-cli
+### Smart Mode (AI Enhancement)
+
+1. Toggle **"Smart Mode"** ON
+2. Sign letters to spell words
+3. AI refines your words into natural sentences
+4. Hear polished, conversational speech
+
+## Technology Stack
+
+- **Frontend**: Next.js 14 + React 18 + TypeScript
+- **AI Vision**: MediaPipe (hand tracking) + Google Gemini (optional)
+- **Speech**: Web Speech API (browser-native)
+- **Auth**: Clerk
+- **Styling**: Tailwind CSS
+- **Deployment**: AWS Amplify
+
+## Features in Detail
+
+### 🔤 ASL Alphabet Detection
+
+All 26 letters of the ASL alphabet are supported:
+- **A-Z**: Standard ASL hand shapes
+- **Real-time detection**: See letters as you sign
+- **Immediate speech**: Hear each letter spoken
+- **Word building**: Letters combine into words automatically
+
+### 🌍 Multilingual Support
+
+Choose from 10 languages:
+- English, Spanish, French, German, Italian
+- Portuguese, Hindi, Mandarin, Japanese, Arabic
+
+### 🤖 Smart Mode (AI-Powered)
+
+- Refines rough letter sequences into natural sentences
+- Uses Google Gemini AI for context-aware improvements
+- Shows before/after comparison
+- Optional - works offline without it
+
+### 🔒 Privacy & Security
+
+- **No video upload**: Camera stream stays on your device
+- **Local processing**: MediaPipe runs in your browser
+- **Secure auth**: Clerk handles user authentication
+- **Optional AI**: Smart Mode only sends text, never video
+
+## Project Structure
+
+```
+SignLand/
+├── web/                    # Next.js application
+│   ├── app/               # Pages and API routes
+│   ├── components/        # React components
+│   ├── lib/              # Core libraries
+│   │   ├── mediapipe/    # Hand tracking & ASL detection
+│   │   ├── speech/       # Text-to-speech & translations
+│   │   └── gemini/       # AI integration
+│   └── hooks/            # Custom React hooks
+├── docs/                  # Documentation
+├── .kiro/                # Kiro CLI configuration
+└── README.md             # This file
 ```
 
-Then use:
-- **`@prime`** - Load project context
-- **`@plan-feature`** - Plan new features
-- **`@execute`** - Implement plans
-- **`@code-review`** - Review code quality
+## Development
 
-## Development Workflow (Customize this However You Want!)
+### Built with Kiro CLI
 
-### Initial Setup (One-Time)
-1. **Complete setup**: Run `@quickstart` to configure your project
+This project was developed using [Kiro CLI](https://kiro.dev) for AI-assisted development:
 
-### Core Development Cycle (Every Feature/Session)
+- **@prime**: Load project context
+- **@plan-feature**: Plan new features
+- **@execute**: Implement features systematically
+- **@code-review**: Maintain code quality
 
-### Phase 1: Setup & Planning
-1. **Load context**: Use `@prime` to understand your codebase
-2. **Plan features**: Use `@plan-feature` for comprehensive planning
+### Available Scripts
 
-### Phase 2: Build & Iterate
-1. **Implement**: Use `@execute` to build features systematically
-2. **Review**: Use `@code-review` to maintain code quality
-3. **Document**: Update your DEVLOG.md as you work
-4. **Optimize**: Customize your `.kiro/` configuration for your workflow
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm start            # Run production build
+npm run lint         # Lint code
+```
 
-### Phase 3: Submission Preparation
-1. **Final review**: Run `@code-review-hackathon` for submission evaluation
-2. **Polish documentation**: Ensure README.md and DEVLOG.md are complete
-3. **Verify requirements**: Check all submission criteria are met
+## Deployment
 
-## Submission Requirements
+### Deploy to AWS Amplify
 
-Your submission will be judged on these criteria (100 points total):
+1. Connect your GitHub repository to AWS Amplify
+2. Set environment variables in Amplify console
+3. Deploy automatically on push to main branch
 
-### Application Quality (40 points)
-- **Functionality & Completeness** (15 pts): Does it work as intended?
-- **Real-World Value** (15 pts): Does it solve a genuine problem?
-- **Code Quality** (10 pts): Is the code well-structured and maintainable?
+### Environment Variables for Production
 
-### Kiro CLI Usage (20 points)
-- **Effective Use of Features** (10 pts): How well did you leverage Kiro CLI?
-- **Custom Commands Quality** (7 pts): Quality of your custom prompts
-- **Workflow Innovation** (3 pts): Creative use of Kiro CLI features
+```bash
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
+CLERK_SECRET_KEY=sk_live_...
+GEMINI_API_KEY=...
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+```
 
-### Documentation (20 points)
-- **Completeness** (9 pts): All required documentation present
-- **Clarity** (7 pts): Easy to understand and follow
-- **Process Transparency** (4 pts): Clear development process documentation
+## Browser Support
 
-### Innovation (15 points)
-- **Uniqueness** (8 pts): Original approach or solution
-- **Creative Problem-Solving** (7 pts): Novel technical solutions
+- ✅ Chrome/Edge (recommended)
+- ✅ Firefox
+- ✅ Safari
+- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
 
-### Presentation (5 points)
-- **Demo Video** (3 pts): Clear demonstration of your project
-- **README** (2 pts): Professional project overview
+**Requirements**: Webcam access, modern browser with Web Speech API
 
-## Required Documentation
+## Troubleshooting
 
-Ensure these files are complete and high-quality:
+### Camera not working?
+- Grant camera permissions in browser settings
+- Check if another app is using the camera
+- Try refreshing the page
 
-### README.md
-- Clear project description and value proposition
-- Prerequisites and setup instructions
-- Architecture overview and key components
-- Usage examples and troubleshooting
+### Speech not working?
+- Click "Enable Audio" button first
+- Check browser supports Web Speech API
+- Ensure volume is not muted
 
-*There's a lot of freedom for how you can structure this. Just make sure that it's easy for someone viewing this to know exactly what your project is about and how to run it themselves. This is the main criteria that explains the project clearly and how to test it in a local environment.*
+### Letters not detecting?
+- Ensure good lighting
+- Position hand clearly in frame
+- Try AI Vision mode for better accuracy
 
-### DEVLOG.md
-- Development timeline with key milestones
-- Technical decisions and rationale
-- Challenges faced and solutions implemented
-- Time tracking and Kiro CLI usage statistics
+## Contributing
 
-*There's a lot of freedom in how you structure this too. It's up to you how you want to document your timeline, milestones, decisions made, challenges you encounter, and all those kinds of things. Feel free to use Kiro to help you maintain your devlog as you're working on the project. Hint: create a Kiro prompt to help you update your log based on what's happening.*
+Contributions welcome! Please:
 
-### .kiro/ Directory
-- **Steering documents**: Customized for your project
-- **Custom prompts**: Workflow-specific commands
-- **Configuration**: Optimized for your development process
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
-*This template provides a good starting point with prompts, and the wizard helps you set up your initial steering documents. However, it's encouraged for you to continue to customize things and refine it as you're working on your project.*
+## License
 
-## Available Prompts
+MIT License - see [LICENSE](LICENSE) file
 
-This template includes 11 powerful development prompts:
+## Acknowledgments
 
-### Core Development
-- **`@prime`** - Load comprehensive project context
-- **`@plan-feature`** - Create detailed implementation plans
-- **`@execute`** - Execute plans with systematic task management
-- **`@quickstart`** - Interactive project setup wizard
+- **MediaPipe**: Hand tracking technology
+- **Google Gemini**: AI language refinement
+- **Clerk**: Authentication system
+- **Kiro CLI**: AI-assisted development
 
-### Quality Assurance
-- **`@code-review`** - Technical code review for quality and bugs
-- **`@code-review-hackathon`** - Hackathon submission evaluation
-- **`@code-review-fix`** - Fix issues found in code reviews
-- **`@system-review`** - Analyze implementation vs plan
+## Support
 
-### Documentation & Planning
-- **`@create-prd`** - Generate Product Requirements Documents
-- **`@execution-report`** - Generate implementation reports
-- **`@rca`** - Root cause analysis for issues
-- **`@implement-fix`** - Implement fixes based on analysis
-
-## Examples
-
-Check the `examples/` folder for:
-- **README.md**: Professional project documentation example
-- **DEVLOG.md**: Comprehensive development log example
-
-These examples show the level of detail and professionalism expected for hackathon submissions.
-
-## Tips for Success
-
-### Maximize Your Score
-1. **Use Kiro CLI extensively** - It's 20% of your score
-2. **Document everything** - Process documentation is 20% of your score
-3. **Build something useful** - Real-world value is heavily weighted
-4. **Optimize your workflow** - Custom prompts and steering documents matter
-
-### Development Best Practices
-- **Start with `@quickstart`** to set up your foundation properly
-- **Use `@prime`** at the start of every new conversation to quickly catch the coding assistant up to speed on what has been built in the project already
-- **Use `/paste`** to share screenshots and visual references for UI implementation
-- **Update your DEVLOG.md** continuously, not just at the end
-- **Customize your `.kiro/` configuration** as you learn your workflow
-- **Run `@code-review-hackathon`** periodically to compare your project against the judging rubric and before submitting
-
-## Getting Help
-
-- **Kiro CLI Documentation**: [kiro.dev/docs/cli](https://kiro.dev/docs/cli)
-- **Hackathon Community**: Join the Dynamous community for support
-- **Built-in Help**: Use `/help` in Kiro CLI for command assistance
+- **Issues**: [GitHub Issues](https://github.com/ANAMASGARD/SignLand/issues)
+- **Documentation**: See `/docs` folder
+- **Development Log**: See [DEVLOG.md](DEVLOG.md)
 
 ---
 
-**Ready to build something amazing?** Run `@quickstart` and let's get started! 🚀
+**Made with ❤️ for the non-verbal community**
+
+*Empowering communication, one gesture at a time.*

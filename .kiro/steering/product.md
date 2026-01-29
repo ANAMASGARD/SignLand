@@ -136,13 +136,21 @@ People who need communication aids that:
 - **Gesture Filtering**: Prevents invalid gestures (None, Unknown) from triggering speech
 - **Gesture Repetition Logic**: 2-second timeout allows intentional gesture repetition
 - **Complete Pipeline**: Camera → MediaPipe → Gesture Recognition → Speech Synthesis → Audio Output
+- **ASL Alphabet Detection**: All 26 letters with standard ASL hand shapes
+- **Letter-by-Letter Speech**: Immediate natural speech output for each detected letter
+- **Word Building System**: Auto-completion after 3 seconds of inactivity
+- **Multilingual Support**: 10 languages with translation system
+- **Smart Mode**: Gemini AI integration for natural language refinement
+- **AI Vision Mode**: Gemini Vision API for accurate ASL detection
+- **Motion Tracking**: Detection for HELLO, THANK YOU, PLEASE gestures
+- **Beautiful UI**: Language selector, Smart Mode toggle, visual refinement display
+- **Natural Conversational Flow**: Rate 1.1 speech for smooth, human-like output
 
 ### 🚧 In Progress
 - None (core MVP complete)
 
 ### 📋 Planned Features (Future Enhancements)
-- **Gesture Stabilizer**: Debouncing and consensus logic for improved accuracy
-- **Smart Mode**: Gemini API integration for natural language text refinement
+- **Gesture Stabilizer**: Enhanced debouncing and consensus logic for improved accuracy
 - **Settings Page**: Voice selection, language preferences, gesture sensitivity controls
 - **Gesture Library**: Custom gesture mapping and training interface
 - **Onboarding Flow**: Interactive tutorial for first-time users
