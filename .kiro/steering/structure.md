@@ -15,7 +15,7 @@ dynamous-kiro-hackathon/
 │       ├── execute.md             # Execute development plans
 │       ├── code-review.md         # Code quality review
 │       └── ...                    # Additional workflow prompts
-├── web/                            # Next.js application (main app)
+├── app/                            # Next.js App Router (main app)
 │   ├── app/                       # Next.js App Router
 │   │   ├── sign-in/              # Sign-in page with Clerk
 │   │   │   └── [[...sign-in]]/   # Catch-all route for Clerk
@@ -23,11 +23,12 @@ dynamous-kiro-hackathon/
 │   │   │   └── [[...sign-up]]/   # Catch-all route for Clerk
 │   │   ├── translate/            # Protected: Main gesture recognition interface
 │   │   ├── api/                  # API routes
-│   │   │   └── refine/           # Gemini text refinement endpoint
+│   │   │   ├── refine/           # Gemini text refinement endpoint
+│   │   │   └── detect-asl/       # Gemini vision ASL detection endpoint
 │   │   ├── layout.tsx            # Root layout with ClerkProvider
 │   │   ├── page.tsx              # Landing page with hero
 │   │   └── globals.css           # Global styles
-│   ├── components/                # React components
+├── components/                    # React components
 │   │   ├── landing/              # Landing page components
 │   │   │   ├── Hero.tsx          # Hero section with 3D robot
 │   │   │   ├── HeroScene.tsx     # Three.js scene wrapper
@@ -37,7 +38,7 @@ dynamous-kiro-hackathon/
 │   │   ├── SpeechOutput/         # Text-to-speech management (planned)
 │   │   ├── Stabilizer/           # Gesture stabilization logic (planned)
 │   │   └── CaptionDisplay/       # Real-time caption UI (planned)
-│   ├── lib/                       # Utility libraries
+├── lib/                           # Utility libraries
 │   │   ├── mediapipe/            # MediaPipe configuration and helpers
 │   │   ├── design/               # Design tokens and utilities
 │   │   ├── ui/                   # UI utilities (motion, etc.)
