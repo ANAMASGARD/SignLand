@@ -1,31 +1,17 @@
 version: 1
-applications:
-  - appRoot: web
-    frontend:
-      phases:
-        preBuild:
-          commands:
-            - npm install
-        build:
-          commands:
-            - npm run build
-      artifacts:
-        baseDirectory: .next
-        files:
-          - '**/*'
-      cache:
-        paths:
-          - node_modules/**/*
-          - .next/cache/**/*
-    environment:
-      variables:
-        # Update this after deployment with actual Amplify URL
-        NEXT_PUBLIC_APP_URL: https://main.d17160ph8qo3p6.amplifyapp.com
-        # Add these in Amplify Console Environment Variables:
-        # NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-        # CLERK_SECRET_KEY
-        # GEMINI_API_KEY (optional)
-        # NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-        # NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-        # NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/translate
-        # NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/translate
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm install
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
