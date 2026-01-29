@@ -434,13 +434,11 @@ export function GestureRecognizer() {
         const handedness = results.handednesses?.[0]?.[0]?.categoryName || 'Right';
         const aslResult = detectASLLetter(landmarks, handedness);
         
-        // Debug logging
-        if (aslResult.letter) {
-          console.log('✅ Detected:', aslResult.letter, 'Confidence:', aslResult.confidence.toFixed(2));
-        }
+        // Debug logging - show ALL detections
+        console.log('🔍 Detection:', aslResult.letter || 'None', 'Confidence:', aslResult.confidence.toFixed(2));
         
-        // Immediate detection with lowered threshold
-        if (aslResult.letter && aslResult.confidence > 0.40 && aslResult.letter !== lastSpokenGesture) {
+        // VERY LOW threshold - detect almost anything
+        if (aslResult.letter && aslResult.confidence > 0.15 && aslResult.letter !== lastSpokenGesture) {
           const stableLetter = aslResult.letter;
           const newWord = wordBuffer + stableLetter;
           setWordBuffer(newWord);
@@ -448,13 +446,15 @@ export function GestureRecognizer() {
           setDetectedLetter(stableLetter);
           playBeep();
           
+          console.log('✅ ADDED LETTER:', stableLetter, '| Word now:', newWord);
+          
           // Update predictions if 3+ letters
           if (newWord.length >= 3) {
             setPredictions(predictWord(newWord));
           }
           
           setLastSpokenGesture(stableLetter);
-          setTimeout(() => setLastSpokenGesture(null), 600);
+          setTimeout(() => setLastSpokenGesture(null), 300); // Very short cooldown
         }
       }
     }

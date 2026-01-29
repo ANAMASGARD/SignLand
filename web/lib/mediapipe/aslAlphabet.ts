@@ -373,11 +373,11 @@ export function detectASLLetter(
   const best = sorted[0];
   const second = sorted[1];
   
-  // Very lenient - accept if any reasonable confidence
-  const clearWinner = best.confidence > second.confidence + 0.03;
+  // VERY lenient - almost no margin needed
+  const clearWinner = best.confidence > second.confidence + 0.01;
   
-  // Very low threshold - accept 35% confidence
-  const minConfidence = 0.35;
+  // VERY low threshold - accept 20% confidence for testing
+  const minConfidence = 0.20;
   
   if (best.confidence < minConfidence || !clearWinner) {
     return { letter: '', confidence: 0 };
