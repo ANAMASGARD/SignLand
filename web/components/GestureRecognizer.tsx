@@ -430,17 +430,17 @@ export function GestureRecognizer() {
         }
       }
       // Detect letters only if no control gesture active
-      else if (!currentControlGesture) {
+      else if (!currentControlGesture && detectionMode === 'letter') {
         const handedness = results.handednesses?.[0]?.[0]?.categoryName || 'Right';
         const aslResult = detectASLLetter(landmarks, handedness);
         
         // Debug logging
         if (aslResult.letter) {
-          console.log('Detected:', aslResult.letter, 'Confidence:', aslResult.confidence.toFixed(2));
+          console.log('✅ Detected:', aslResult.letter, 'Confidence:', aslResult.confidence.toFixed(2));
         }
         
-        // Immediate detection with single frame (for testing/debugging)
-        if (aslResult.letter && aslResult.confidence > 0.30 && aslResult.letter !== lastSpokenGesture) {
+        // Immediate detection with lowered threshold
+        if (aslResult.letter && aslResult.confidence > 0.40 && aslResult.letter !== lastSpokenGesture) {
           const stableLetter = aslResult.letter;
           const newWord = wordBuffer + stableLetter;
           setWordBuffer(newWord);
