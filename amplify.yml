@@ -1,7 +1,6 @@
 version: 1
 applications:
   - appRoot: web
-    platform: WEB_COMPUTE
     frontend:
       phases:
         preBuild:
@@ -16,10 +15,8 @@ applications:
           - '**/*'
       cache:
         paths:
-          - .npm/**/*
-          - .next/cache/**/*
           - node_modules/**/*
-      buildPath: /
+          - .next/cache/**/*
     environment:
       variables:
         # Update this after deployment with actual Amplify URL
