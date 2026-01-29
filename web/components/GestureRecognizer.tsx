@@ -5,7 +5,7 @@ import { useCamera } from '@/hooks/useCamera';
 import { useMediaPipe } from '@/hooks/useMediaPipe';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { drawLandmarks } from '@/lib/mediapipe/drawLandmarks';
-import { detectASLLetter, type ASLDetectionResult } from '@/lib/mediapipe/aslAlphabet';
+import { detectASLLetter, type ASLDetectionResult } from '@/lib/mediapipe/aslAlphabetSimple';
 import { detectControlGesture } from '@/lib/mediapipe/controlGestures';
 import { detectASLPhrase } from '@/lib/mediapipe/aslPhrases';
 import { createMotionHistory, addFrame, type MotionHistory } from '@/lib/mediapipe/motionTracker';
@@ -434,11 +434,13 @@ export function GestureRecognizer() {
         const handedness = results.handednesses?.[0]?.[0]?.categoryName || 'Right';
         const aslResult = detectASLLetter(landmarks, handedness);
         
-        // Debug logging - show ALL detections
-        console.log('🔍 Detection:', aslResult.letter || 'None', 'Confidence:', aslResult.confidence.toFixed(2));
+        // Debug logging - show what's detected
+        if (aslResult.letter) {
+          console.log('🔍 DETECTED:', aslResult.letter, 'Confidence:', aslResult.confidence.toFixed(2));
+        }
         
-        // VERY LOW threshold - detect almost anything
-        if (aslResult.letter && aslResult.confidence > 0.15 && aslResult.letter !== lastSpokenGesture) {
+        // Accept ANY detection with confidence > 0.5
+        if (aslResult.letter && aslResult.confidence > 0.5 && aslResult.letter !== lastSpokenGesture) {
           const stableLetter = aslResult.letter;
           const newWord = wordBuffer + stableLetter;
           setWordBuffer(newWord);
@@ -446,7 +448,7 @@ export function GestureRecognizer() {
           setDetectedLetter(stableLetter);
           playBeep();
           
-          console.log('✅ ADDED LETTER:', stableLetter, '| Word now:', newWord);
+          console.log('✅ ADDED:', stableLetter, '→ Word:', newWord);
           
           // Update predictions if 3+ letters
           if (newWord.length >= 3) {
@@ -454,7 +456,7 @@ export function GestureRecognizer() {
           }
           
           setLastSpokenGesture(stableLetter);
-          setTimeout(() => setLastSpokenGesture(null), 300); // Very short cooldown
+          setTimeout(() => setLastSpokenGesture(null), 500);
         }
       }
     }
