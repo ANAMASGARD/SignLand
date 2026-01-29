@@ -124,22 +124,28 @@ People who need communication aids that:
 - **Navigation**: Updated landing page with "Get Started" and "Sign in" buttons
 - **Responsive Design**: Mobile-first design with Tailwind CSS across all pages
 - **Environment Configuration**: Complete setup for Clerk authentication and API keys
-- **MediaPipe Gesture Recognition**: Real-time hand tracking with 21-point landmark visualization
-- **GestureRecognizer Component**: Video/canvas overlay with 30 FPS processing
+- **MediaPipe Gesture Recognition**: Real-time hand tracking with 21-point landmark visualization at 30 FPS
+- **GestureRecognizer Component**: Video/canvas overlay with gesture detection and results display
 - **Premium UI Components**: Shimmer buttons with Aceternity UI style and glassmorphism effects
 - **Camera Management**: Custom hooks for webcam access and MediaPipe lifecycle
 - **Responsive Layout**: Viewport-based heights with mobile-first design approach
+- **Speech Synthesis**: Web Speech API integration with automatic voice selection
+- **Gesture-to-Phrase Mapping**: 7 common gestures (thumbs up/down, peace, stop, wait, look, I love you)
+- **Real-time Caption Display**: Visual feedback showing detected phrases with speaking status
+- **Audio Unlock Button**: "Enable Audio" button for browser permission requirements
+- **Gesture Filtering**: Prevents invalid gestures (None, Unknown) from triggering speech
+- **Gesture Repetition Logic**: 2-second timeout allows intentional gesture repetition
+- **Complete Pipeline**: Camera → MediaPipe → Gesture Recognition → Speech Synthesis → Audio Output
 
 ### 🚧 In Progress
-- **Gesture Stabilizer**: Debouncing and consensus logic for stable gesture detection
-- **Speech Synthesis**: Web Speech API implementation for audio output
-- **Gesture-to-Phrase Mapping**: Common sign language phrases and vocabulary
-- **Smart Mode**: Gemini API integration for text refinement
+- None (core MVP complete)
 
-### 📋 Planned Features
-- **Settings Page**: Voice selection and language preferences
-- **Gesture Library**: Custom gesture mapping and training
-- **Onboarding Flow**: Tutorial for first-time users
+### 📋 Planned Features (Future Enhancements)
+- **Gesture Stabilizer**: Debouncing and consensus logic for improved accuracy
+- **Smart Mode**: Gemini API integration for natural language text refinement
+- **Settings Page**: Voice selection, language preferences, gesture sensitivity controls
+- **Gesture Library**: Custom gesture mapping and training interface
+- **Onboarding Flow**: Interactive tutorial for first-time users
 - **Analytics Dashboard**: Usage statistics and performance metrics
 - **Phrase History**: Track and replay recent translations
 - **Multi-language Support**: Support for different sign language systems (ASL, BSL, etc.)
@@ -149,10 +155,13 @@ People who need communication aids that:
 ### Kiro CLI Usage
 This project leverages Kiro CLI extensively for development:
 
-- **`/paste` command**: Used for sharing screenshots and visual references to implement UI features (e.g., macOS-style glassmorphism buttons, shimmer effects, responsive layouts)
-- **Custom prompts**: `@prime`, `@plan-feature`, `@execute`, `@code-review` for structured development
+- **`@prime`**: Load project context at session start for full codebase awareness
+- **`@plan-feature`**: Create comprehensive implementation plans with validation steps
+- **`@execute`**: Systematic task-by-task implementation with validation
+- **`/paste` command**: Share screenshots and visual references to implement UI features instantly
+- **Custom prompts**: Structured development workflow with planning, execution, and review
 - **Steering documents**: Maintained in `.kiro/steering/` for project context and technical decisions
-- **Real-time collaboration**: Kiro CLI enables rapid iteration on UI/UX by processing visual references and implementing designs instantly
-- **Code generation**: Automated component creation (GestureRecognizer, ShimmerButton, custom hooks) with best practices built-in
+- **Real-time collaboration**: Rapid iteration on UI/UX by processing visual references
+- **Code generation**: Automated component creation with best practices built-in
 - **Multi-file operations**: Simultaneous updates across components, hooks, and utilities
-- **Debugging assistance**: Quick fixes for React StrictMode issues, canvas alignment, and performance optimization
+- **Debugging assistance**: Quick fixes for browser compatibility, TTS issues, and performance optimization
