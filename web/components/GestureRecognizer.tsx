@@ -9,6 +9,7 @@ import { detectASLLetter, type ASLDetectionResult } from '@/lib/mediapipe/aslAlp
 import { detectControlGesture } from '@/lib/mediapipe/controlGestures';
 import { detectASLPhrase } from '@/lib/mediapipe/aslPhrases';
 import { createMotionHistory, addFrame, type MotionHistory } from '@/lib/mediapipe/motionTracker';
+import { detectASLWithGeminiThrottled } from '@/lib/gemini/aslVision';
 import { playBeep, playWhoosh } from '@/lib/audio/soundEffects';
 import { gestureToPhrase, letterToPhrase, formatSentence, shouldIncreasePitch, speakNaturally, enhanceWithContext, updateContext, clearContext, predictWord, trackWordUsage, saveToDictionary, translateGesture, translateWord, loadLanguagePreference } from '@/lib/speech';
 import { ShimmerButton } from '@/components/ui/ShimmerButton';
@@ -47,6 +48,10 @@ export function GestureRecognizer() {
   const [smartModeEnabled, setSmartModeEnabled] = useState<boolean>(false);
   const [isRefining, setIsRefining] = useState<boolean>(false);
   const [lastRefinement, setLastRefinement] = useState<{ original: string; refined: string } | null>(null);
+  
+  // AI Vision Mode for ASL detection
+  const [useAIVision, setUseAIVision] = useState<boolean>(true); // Default to AI
+  const [isDetectingWithAI, setIsDetectingWithAI] = useState<boolean>(false);
   
   // Word builder state
   const [wordBuffer, setWordBuffer] = useState<string>('');
@@ -431,32 +436,64 @@ export function GestureRecognizer() {
       }
       // Detect letters only if no control gesture active
       else if (!currentControlGesture && detectionMode === 'letter') {
-        const handedness = results.handednesses?.[0]?.[0]?.categoryName || 'Right';
-        const aslResult = detectASLLetter(landmarks, handedness);
-        
-        // Debug logging - show what's detected
-        if (aslResult.letter) {
-          console.log('🔍 DETECTED:', aslResult.letter, 'Confidence:', aslResult.confidence.toFixed(2));
+        // AI Vision Mode - Use Gemini for accurate detection
+        if (useAIVision && videoRef.current && !isDetectingWithAI) {
+          setIsDetectingWithAI(true);
+          
+          detectASLWithGeminiThrottled(videoRef.current)
+            .then((result) => {
+              if (result && result.letter && result.letter !== lastSpokenGesture) {
+                const stableLetter = result.letter;
+                const newWord = wordBuffer + stableLetter;
+                setWordBuffer(newWord);
+                setLastLetterTime(Date.now());
+                setDetectedLetter(stableLetter);
+                playBeep();
+                
+                console.log('🤖 AI DETECTED:', stableLetter, '→ Word:', newWord);
+                
+                // Update predictions
+                if (newWord.length >= 3) {
+                  setPredictions(predictWord(newWord));
+                }
+                
+                setLastSpokenGesture(stableLetter);
+                setTimeout(() => setLastSpokenGesture(null), 800);
+              }
+            })
+            .catch((error) => {
+              console.error('AI detection error:', error);
+            })
+            .finally(() => {
+              setIsDetectingWithAI(false);
+            });
         }
-        
-        // Accept ANY detection with confidence > 0.5
-        if (aslResult.letter && aslResult.confidence > 0.5 && aslResult.letter !== lastSpokenGesture) {
-          const stableLetter = aslResult.letter;
-          const newWord = wordBuffer + stableLetter;
-          setWordBuffer(newWord);
-          setLastLetterTime(Date.now());
-          setDetectedLetter(stableLetter);
-          playBeep();
+        // Fallback: Simple rule-based detection
+        else if (!useAIVision) {
+          const handedness = results.handednesses?.[0]?.[0]?.categoryName || 'Right';
+          const aslResult = detectASLLetter(landmarks, handedness);
           
-          console.log('✅ ADDED:', stableLetter, '→ Word:', newWord);
-          
-          // Update predictions if 3+ letters
-          if (newWord.length >= 3) {
-            setPredictions(predictWord(newWord));
+          if (aslResult.letter) {
+            console.log('📏 Rule-based:', aslResult.letter, 'Confidence:', aslResult.confidence.toFixed(2));
           }
           
-          setLastSpokenGesture(stableLetter);
-          setTimeout(() => setLastSpokenGesture(null), 500);
+          if (aslResult.letter && aslResult.confidence > 0.5 && aslResult.letter !== lastSpokenGesture) {
+            const stableLetter = aslResult.letter;
+            const newWord = wordBuffer + stableLetter;
+            setWordBuffer(newWord);
+            setLastLetterTime(Date.now());
+            setDetectedLetter(stableLetter);
+            playBeep();
+            
+            console.log('✅ ADDED:', stableLetter, '→ Word:', newWord);
+            
+            if (newWord.length >= 3) {
+              setPredictions(predictWord(newWord));
+            }
+            
+            setLastSpokenGesture(stableLetter);
+            setTimeout(() => setLastSpokenGesture(null), 500);
+          }
         }
       }
     }
@@ -580,6 +617,27 @@ export function GestureRecognizer() {
             <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
               {/* Language Selector */}
               <LanguageSelector onLanguageChange={setSelectedLanguage} />
+              
+              {/* AI Vision Toggle for ASL */}
+              {isRunning && detectionMode === 'letter' && (
+                <button
+                  onClick={() => setUseAIVision(!useAIVision)}
+                  className={`px-4 py-2.5 rounded-xl shadow-lg transition-all duration-200 flex items-center gap-2 font-medium ${
+                    useAIVision
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                      : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
+                  }`}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <div className="flex flex-col items-start">
+                    <span className="text-xs">AI Vision</span>
+                    <span className="text-xs opacity-80">{useAIVision ? 'ON' : 'OFF'}</span>
+                  </div>
+                </button>
+              )}
               
               {/* Smart Mode Toggle */}
               {isRunning && (
