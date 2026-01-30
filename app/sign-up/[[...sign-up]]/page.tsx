@@ -1,85 +1,134 @@
-'use client';
+import { SignUp } from "@clerk/nextjs";
+import Image from "next/image";
+import { Hand, Sparkles, Globe, Shield, Zap } from "lucide-react";
 
-import { SignUp } from '@clerk/nextjs';
-
-export default function SignUpPage() {
+export default function Page() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
-      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
-        {/* Left side - Sign Up Form */}
-        <div className="flex items-center justify-center order-2 lg:order-1">
-          <div className="w-full max-w-md">
-            <SignUp 
-              appearance={{
-                elements: {
-                  rootBox: "mx-auto",
-                  card: "shadow-2xl rounded-2xl",
-                }
-              }}
-              routing="path"
-              path="/sign-up"
-              signInUrl="/sign-in"
-              forceRedirectUrl="/translate"
-            />
+    <section className="relative min-h-screen w-full overflow-hidden">
+      {/* Full Screen Background Image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          alt="Person using American Sign Language"
+          src="/man-sign.jpg"
+          className="h-full w-full object-cover"
+          priority
+          fill
+          sizes="100vw"
+        />
+        {/* Dark overlay for better readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/65 via-black/55 to-black/65" />
+      </div>
+
+      {/* Content Overlay */}
+      <div className="relative z-10 flex min-h-screen">
+        {/* Left Side - Welcome Text */}
+        <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-8">
+          <div className="max-w-md space-y-6">
+            <a className="inline-block" href="/">
+              <div className="flex items-center gap-2">
+                <span className="text-3xl">🗣️</span>
+                <span className="text-2xl font-bold text-white tracking-tight drop-shadow-2xl">SignLand</span>
+              </div>
+            </a>
+
+            <div className="space-y-3">
+              <h2 className="text-4xl font-bold text-white leading-tight drop-shadow-2xl">
+                Start Your Journey 🌟
+              </h2>
+
+              <p className="text-base leading-relaxed text-white drop-shadow-xl">
+                Break communication barriers with AI-powered sign language translation.
+              </p>
+            </div>
+
+            {/* Feature Points */}
+            <div className="space-y-2.5 pt-2">
+              <div className="flex items-start gap-3 bg-white/20 backdrop-blur-md rounded-lg p-3 border border-white/30">
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
+                  <Zap className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white text-sm drop-shadow-xl">Instant Translation</h3>
+                  <p className="text-white text-xs drop-shadow-lg">Real-time ASL recognition</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 bg-white/20 backdrop-blur-md rounded-lg p-3 border border-white/30">
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-purple-500 flex items-center justify-center shadow-lg">
+                  <Sparkles className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white text-sm drop-shadow-xl">AI-Powered Smart Mode</h3>
+                  <p className="text-white text-xs drop-shadow-lg">Natural conversational speech</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 bg-white/20 backdrop-blur-md rounded-lg p-3 border border-white/30">
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
+                  <Globe className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white text-sm drop-shadow-xl">10 Languages</h3>
+                  <p className="text-white text-xs drop-shadow-lg">Communicate globally</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 bg-white/20 backdrop-blur-md rounded-lg p-3 border border-white/30">
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-pink-500 flex items-center justify-center shadow-lg">
+                  <Shield className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white text-sm drop-shadow-xl">100% Privacy</h3>
+                  <p className="text-white text-xs drop-shadow-lg">Local processing only</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Right side - Branding */}
-        <div className="hidden lg:flex flex-col justify-center space-y-6 px-8 order-1 lg:order-2">
-          <div className="space-y-4">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Start Your Journey
-            </h1>
-            <p className="text-xl text-gray-600">
-              Join SignLand and communicate effortlessly with sign language
-            </p>
-          </div>
-          
-          <div className="space-y-4 pt-8">
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Easy to Use</h3>
-                <p className="text-gray-600">Start communicating in seconds with just your webcam</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Multilingual</h3>
-                <p className="text-gray-600">Choose from multiple languages and voices</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">AI-Powered</h3>
-                <p className="text-gray-600">Smart mode refines gestures into natural speech</p>
-              </div>
-            </div>
-          </div>
+        {/* Right Side - Sign Up Form Overlay */}
+        <div className="w-full lg:w-1/2 flex items-start justify-center p-4 lg:p-6 overflow-y-auto">
+          <div className="w-full max-w-md my-auto">
+            {/* Mobile Header */}
+            <div className="mb-4 lg:hidden text-center">
+              <a
+                className="inline-flex items-center justify-center mb-3 hover:opacity-80 transition-all"
+                href="/"
+              >
+                <span className="text-4xl">🗣️</span>
+              </a>
 
-          <div className="pt-8 border-t border-gray-200">
-            <p className="text-sm text-gray-500">
-              🔒 Your privacy is our priority. Video processing happens locally on your device.
-            </p>
+              <h1 className="text-xl font-bold text-white drop-shadow-2xl">
+                Start Your Journey 🌟
+              </h1>
+
+              <p className="mt-1 text-sm text-white drop-shadow-xl">
+                Break communication barriers with AI
+              </p>
+            </div>
+
+            {/* Sign Up Component with glass effect */}
+            <div className="bg-white backdrop-blur-md rounded-xl shadow-2xl p-5 lg:p-6 border-0">
+              <SignUp 
+                appearance={{
+                  elements: {
+                    rootBox: "w-full",
+                    card: "shadow-none bg-transparent w-full border-0",
+                    headerTitle: "hidden",
+                    headerSubtitle: "hidden",
+                    socialButtonsBlockButton: "bg-white hover:bg-gray-50 border-0 shadow-sm text-sm",
+                    formButtonPrimary: "bg-blue-600 hover:bg-blue-700 text-sm normal-case shadow-md border-0",
+                    footerAction: "hidden",
+                    formFieldInput: "border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg text-sm",
+                    identityPreviewEditButton: "border-0",
+                    formFieldLabel: "text-sm",
+                  }
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,79 +1,144 @@
-'use client';
+import { SignIn } from "@clerk/nextjs";
+import Image from "next/image";
+import { Hand, Mic, Lock, Wifi, Users } from "lucide-react";
 
-import { SignIn } from '@clerk/nextjs';
-
-export default function SignInPage() {
+export default function Page() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50 p-4">
-      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
-        {/* Left side - Branding */}
-        <div className="hidden lg:flex flex-col justify-center space-y-6 px-8">
-          <div className="space-y-4">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              Welcome Back
-            </h1>
-            <p className="text-xl text-gray-600">
-              Sign in to continue your journey with SignLand
-            </p>
-          </div>
-          
-          <div className="space-y-4 pt-8">
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+    <section className="relative min-h-screen w-full overflow-hidden">
+      {/* Full Screen Background Image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          alt="Person communicating with American Sign Language"
+          src="/GIRL-IMAGE.jpg"
+          className="h-full w-full object-cover brightness-125"
+          priority
+          fill
+          sizes="100vw"
+        />
+        {/* Lighter overlay for better visibility */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/30 to-black/40" />
+      </div>
+
+      {/* Content Overlay */}
+      <div className="relative z-10 flex min-h-screen">
+        {/* Left Side - Welcome Text */}
+        <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-8">
+          <div className="max-w-md space-y-6">
+            <a className="inline-block" href="/">
+              <div className="flex items-center gap-2">
+                <span className="text-3xl">🗣️</span>
+                <span className="text-2xl font-bold text-white tracking-tight drop-shadow-2xl">SignLand</span>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Real-time Translation</h3>
-                <p className="text-gray-600">Instant sign language to speech conversion</p>
-              </div>
+            </a>
+
+            <div className="space-y-3">
+              <h2 className="text-4xl font-bold text-white leading-tight drop-shadow-2xl">
+                Welcome Back 👋
+              </h2>
+
+              <p className="text-base leading-relaxed text-white drop-shadow-xl">
+                Continue your journey of seamless communication through sign language.
+              </p>
             </div>
-            
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+
+            {/* Feature Points */}
+            <div className="space-y-2.5 pt-2">
+              <div className="flex items-start gap-3 bg-white/20 backdrop-blur-md rounded-lg p-3 border border-white/30">
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-purple-500 flex items-center justify-center shadow-lg">
+                  <Hand className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white text-sm drop-shadow-xl">26 ASL Letters + Phrases</h3>
+                  <p className="text-white text-xs drop-shadow-lg">Complete alphabet recognition</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Privacy First</h3>
-                <p className="text-gray-600">Your video never leaves your device</p>
+
+              <div className="flex items-start gap-3 bg-white/20 backdrop-blur-md rounded-lg p-3 border border-white/30">
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
+                  <Mic className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white text-sm drop-shadow-xl">Natural Voice Output</h3>
+                  <p className="text-white text-xs drop-shadow-lg">High-quality text-to-speech</p>
+                </div>
               </div>
-            </div>
-            
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+
+              <div className="flex items-start gap-3 bg-white/20 backdrop-blur-md rounded-lg p-3 border border-white/30">
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
+                  <Wifi className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white text-sm drop-shadow-xl">Works Offline</h3>
+                  <p className="text-white text-xs drop-shadow-lg">No internet required</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Works Offline</h3>
-                <p className="text-gray-600">Fast mode requires no internet connection</p>
+
+              <div className="flex items-start gap-3 bg-white/20 backdrop-blur-md rounded-lg p-3 border border-white/30">
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-pink-500 flex items-center justify-center shadow-lg">
+                  <Lock className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white text-sm drop-shadow-xl">Your Privacy Matters</h3>
+                  <p className="text-white text-xs drop-shadow-lg">Zero video upload</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 bg-white/20 backdrop-blur-md rounded-lg p-3 border border-white/30">
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center shadow-lg">
+                  <Users className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white text-sm drop-shadow-xl">Empowering Community</h3>
+                  <p className="text-white text-xs drop-shadow-lg">Join thousands worldwide</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right side - Sign In Form */}
-        <div className="flex items-center justify-center">
-          <div className="w-full max-w-md">
-            <SignIn 
-              appearance={{
-                elements: {
-                  rootBox: "mx-auto",
-                  card: "shadow-2xl rounded-2xl",
-                }
-              }}
-              routing="path"
-              path="/sign-in"
-              signUpUrl="/sign-up"
-              forceRedirectUrl="/translate"
-            />
+        {/* Right Side - Sign In Form Overlay */}
+        <div className="w-full lg:w-1/2 flex items-start justify-center p-4 lg:p-6 overflow-y-auto">
+          <div className="w-full max-w-md my-auto">
+            {/* Mobile Header */}
+            <div className="mb-4 lg:hidden text-center">
+              <a
+                className="inline-flex items-center justify-center mb-3 hover:opacity-80 transition-all"
+                href="/"
+              >
+                <span className="text-4xl">🗣️</span>
+              </a>
+
+              <h1 className="text-xl font-bold text-white drop-shadow-2xl">
+                Welcome Back 👋
+              </h1>
+
+              <p className="mt-1 text-sm text-white drop-shadow-xl">
+                Continue your communication journey
+              </p>
+            </div>
+
+            {/* Sign In Component with glass effect */}
+            <div className="bg-white backdrop-blur-md rounded-xl shadow-2xl p-5 lg:p-6 border-0">
+              <SignIn 
+                appearance={{
+                  elements: {
+                    rootBox: "w-full",
+                    card: "shadow-none bg-transparent w-full border-0",
+                    headerTitle: "hidden",
+                    headerSubtitle: "hidden",
+                    socialButtonsBlockButton: "bg-white hover:bg-gray-50 border-0 shadow-sm text-sm",
+                    formButtonPrimary: "bg-purple-600 hover:bg-purple-700 text-sm normal-case shadow-md border-0",
+                    footerAction: "hidden",
+                    formFieldInput: "border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 rounded-lg text-sm",
+                    identityPreviewEditButton: "border-0",
+                    formFieldLabel: "text-sm",
+                  }
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

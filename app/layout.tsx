@@ -17,6 +17,14 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: "SignLand - Real-Time Sign Language to Speech",
   description: "Privacy-first sign language to speech communication tool",
+  icons: {
+    icon: [
+      {
+        url: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🗣️</text></svg>",
+        type: "image/svg+xml",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
