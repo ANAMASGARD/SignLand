@@ -468,13 +468,56 @@
 
 ---
 
+## Final Bug Fixes & Polish (Jan 30, 2026 - Evening)
+**Time Invested**: ~2 hours
+
+### Critical Audio Fixes
+**Challenge**: Audio not working when AI Vision or Smart Mode enabled
+**Root Cause**: Missing dependencies in useEffect array causing stale closures
+
+**Fixes Applied**:
+1. **Audio Unlock State**: Added `audioMuted` to dependency array - fixed stale closure where `speakIfNotMuted` checked old mute state
+2. **Natural Speech Wrapper**: Created `speakNaturallyIfUnlocked()` wrapper to ensure sentence completion (PERIOD gesture) respects audio unlock
+3. **AI Vision & Smart Mode**: Added `useAIVision` and `smartModeEnabled` to dependency array - ensures detection loop updates when modes toggle
+
+**Impact**: Audio now works perfectly in ALL modes:
+- ✅ Fast Mode (default)
+- ✅ Smart Mode (AI refinement)
+- ✅ AI Vision Mode (Gemini detection)
+- ✅ All combinations of the above
+
+### Mobile UX Improvements
+**Challenge**: Landing page not scrollable on mobile devices
+**Root Cause**: `overflow: hidden` and `height: 100%` on html/body prevented vertical scrolling
+
+**Fix Applied**:
+- Changed `overflow: hidden` → `overflow-x: hidden` (allows vertical scroll)
+- Changed `height: 100%` → `min-height: 100%` (allows content expansion)
+- Added `py-20` padding on mobile for proper spacing
+- Reduced robot height from 45vh → 40vh on mobile
+
+**Impact**: Mobile users can now scroll to see all buttons and content
+
+### Development Insights
+- **React Hooks Gotcha**: Dependency arrays must include ALL values used in effect
+- **Stale Closures**: Async operations (Promises) can capture stale values if dependencies missing
+- **Mobile Testing**: Always test scrolling behavior on actual mobile devices
+- **Audio Permissions**: Browser audio unlock requires user gesture - must be explicit
+
+**Kiro CLI Usage**:
+- Rapid debugging with context-aware analysis
+- Multi-file updates in single operations
+- Git workflow automation
+
+---
+
 ## Conclusion
 
 SignLand demonstrates that privacy-first, real-time sign language to speech communication is not only possible but practical. By leveraging modern web technologies (MediaPipe, Web Speech API) and optional AI enhancement (Gemini), we've created a tool that empowers non-verbal individuals to communicate naturally without sacrificing privacy or requiring specialized hardware.
 
 The development process showcased the power of AI-assisted development with Kiro CLI, reducing development time by 33% while maintaining high code quality and comprehensive documentation. The hybrid approach (local processing + optional cloud AI) provides users with choice and control over their privacy/quality tradeoff.
 
-**Total Development Time**: ~80 hours  
+**Total Development Time**: ~82 hours  
 **Lines of Code**: ~15,000  
 **Components Created**: 25+  
 **Custom Hooks**: 4  
@@ -487,4 +530,4 @@ The development process showcased the power of AI-assisted development with Kiro
 
 ---
 
-*Last Updated: January 30, 2026*
+*Last Updated: January 30, 2026 - 14:45 IST*

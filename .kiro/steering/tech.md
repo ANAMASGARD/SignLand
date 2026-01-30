@@ -300,3 +300,58 @@ This project demonstrates extensive use of Kiro CLI for rapid, high-quality deve
 **With Kiro CLI**: System-wide font change in seconds, guaranteed consistency
 
 This workflow demonstrates how Kiro CLI transforms development from manual coding to collaborative design implementation.
+
+## Recent Technical Challenges & Solutions (Jan 30, 2026)
+
+### Audio Not Working with AI Vision/Smart Mode
+**Problem**: When users enabled AI Vision or Smart Mode, audio stopped playing despite "Enable Audio" being clicked.
+
+**Root Cause Analysis**:
+1. **Stale Closure Issue**: `audioMuted` state was missing from useEffect dependency array
+2. **Missing Dependencies**: `useAIVision` and `smartModeEnabled` not in dependencies
+3. **Async Promise Callbacks**: AI Vision detection runs in Promise chain, capturing stale closure values
+
+**Solution Implemented**:
+```typescript
+// Before (broken):
+}, [results, isRunning, audioUnlocked, lastSpokenGesture, ...]);
+
+// After (fixed):
+}, [results, isRunning, audioUnlocked, audioMuted, lastSpokenGesture, 
+    useAIVision, smartModeEnabled, ...]);
+```
+
+**Technical Insight**: React useEffect closures capture values at creation time. When async operations (Promises, setTimeout) reference state, they use captured values. If state changes but effect doesn't re-run (missing dependency), async code uses stale values.
+
+**Verification**: Audio now works in all combinations:
+- Fast Mode ✅
+- Smart Mode ✅  
+- AI Vision Mode ✅
+- Smart Mode + AI Vision ✅
+
+### Mobile Scrolling Issue
+**Problem**: Landing page not scrollable on mobile, bottom buttons invisible.
+
+**Root Cause**: Global CSS had `overflow: hidden` and `height: 100%` on html/body, preventing vertical scroll.
+
+**Solution**:
+```css
+/* Before (broken): */
+html, body {
+  overflow: hidden;
+  height: 100%;
+}
+
+/* After (fixed): */
+html, body {
+  overflow-x: hidden;  /* Only prevent horizontal scroll */
+  min-height: 100%;    /* Allow vertical expansion */
+}
+```
+
+**Additional Fixes**:
+- Hero section: `h-screen` → `min-h-screen`
+- Mobile padding: Added `py-20` for proper spacing
+- Robot height: Reduced from 45vh → 40vh on mobile
+
+**Lesson Learned**: Always test mobile scrolling on actual devices, not just desktop responsive mode.
