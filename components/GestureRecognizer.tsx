@@ -108,6 +108,17 @@ export function GestureRecognizer({ isDark = false, offlineMode = false }: { isD
     }
   };
 
+  // Wrapped speakNaturally that checks audio state
+  const speakNaturallyIfUnlocked = async (text: string) => {
+    if (!audioMuted && audioUnlocked) {
+      await speakNaturally(text);
+      // Vibrate on mobile for tactile feedback
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate(50);
+      }
+    }
+  };
+
   const lastFrameTimeRef = useRef<number>(0);
   const frameCountRef = useRef<number>(0);
 
@@ -421,7 +432,7 @@ export function GestureRecognizer({ isDark = false, offlineMode = false }: { isD
           const words = [...sentenceBuffer, wordBuffer].filter(Boolean);
           const enhancedWords = enhanceWithContext(words);
           const formattedSentence = formatSentence(enhancedWords);
-          speakNaturally(formattedSentence);
+          speakNaturallyIfUnlocked(formattedSentence);
           updateContext(formattedSentence, words);
           setCurrentPhrase(`✓ ${formattedSentence}`);
           setSentenceBuffer([]);
