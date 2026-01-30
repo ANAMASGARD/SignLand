@@ -24,8 +24,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 });
     }
 
-    // Call Gemini Vision - Use stable 1.5 Flash model
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // Call Gemini Vision - Use Gemini 2.5 Flash
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     
     const prompt = `You are an expert in American Sign Language (ASL) alphabet recognition.
 
