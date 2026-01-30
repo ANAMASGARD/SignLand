@@ -5,6 +5,7 @@ import Link from 'next/link';
 import gsap from 'gsap';
 import { HeroScene } from './HeroScene';
 import { GlassButton } from '../ui/GlassButton';
+import { OfflineModeButton } from '../OfflineModeButton';
 
 export function LandingHero() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -214,9 +215,12 @@ export function LandingHero() {
 
             {/* Glass CTA Button - Interactive with Aceternity-style effects */}
             <div ref={ctaRef} style={{ opacity: 0 }}>
-              <GlassButton href="/translate" size="lg">
-                Start Experience
-              </GlassButton>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <GlassButton href="/translate" size="lg">
+                  Start Experience
+                </GlassButton>
+                <OfflineModeButton />
+              </div>
             </div>
           </div>
         </div>

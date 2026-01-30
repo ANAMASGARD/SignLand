@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { getOptimalCameraResolution } from '@/lib/pwa/utils';
 
 export function useCamera() {
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -12,10 +13,12 @@ export function useCamera() {
     setError(null);
 
     try {
+      const resolution = getOptimalCameraResolution();
+      
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: 1280,
-          height: 720,
+          width: { ideal: resolution.width },
+          height: { ideal: resolution.height },
           facingMode: 'user'
         }
       });

@@ -32,6 +32,41 @@ SignLand is a **privacy-first**, **real-time** web application that converts Ame
 
 ---
 
+## 📱 Progressive Web App (PWA)
+
+SignLand is a **full-fledged Progressive Web App** that can be installed on your device like a native app!
+
+### ✨ PWA Features
+- 📲 **Install on Home Screen** - Works like a native app on Android, iOS, and desktop
+- 🔌 **Offline Support** - Fast Mode works without internet connection
+- ⚡ **Instant Loading** - Cached assets load instantly on repeat visits
+- 📱 **Mobile-Optimized** - Adaptive camera resolution (640x480 mobile, 1280x720 desktop)
+- 📳 **Vibration Feedback** - Tactile response on gesture detection (mobile)
+- 🔄 **Auto-Updates** - Notification when new version is available
+- 🎨 **Native Experience** - Full-screen mode without browser UI
+
+### 📲 How to Install
+
+**Android (Chrome)**:
+1. Open SignLand in Chrome
+2. Tap **three-dot menu** (⋮) → **"Add to Home Screen"**
+3. Confirm installation
+
+**iOS (Safari)**:
+1. Open SignLand in Safari
+2. Tap **Share button** (□↑) → **"Add to Home Screen"**
+3. Tap **"Add"**
+
+**Desktop (Chrome/Edge)**:
+1. Look for **install icon** (⊕) in address bar
+2. Click **"Install"**
+
+**Or use the in-app install prompt** that appears automatically!
+
+📚 **[Full PWA Documentation](PWA_GUIDE.md)** - Complete guide with troubleshooting
+
+---
+
 ## 🎥 Demo Video
 
 > **[Watch the 3-minute demo video](https://your-video-url.com)** to see SignLand in action!

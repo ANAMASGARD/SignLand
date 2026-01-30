@@ -19,7 +19,7 @@ import { SmartModeToggle } from '@/components/SmartModeToggle';
 import { SmartModeResult } from '@/components/SmartModeResult';
 import type { GestureRecognizerResult, NormalizedLandmark } from '@mediapipe/tasks-vision';
 
-export function GestureRecognizer({ isDark = false }: { isDark?: boolean }) {
+export function GestureRecognizer({ isDark = false, offlineMode = false }: { isDark?: boolean; offlineMode?: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -45,10 +45,18 @@ export function GestureRecognizer({ isDark = false }: { isDark?: boolean }) {
   // Multilingual support
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en-US');
   
-  // Smart Mode state
+  // Smart Mode state (disabled in offline mode)
   const [smartModeEnabled, setSmartModeEnabled] = useState<boolean>(false);
   const [isRefining, setIsRefining] = useState<boolean>(false);
   const [lastRefinement, setLastRefinement] = useState<{ original: string; refined: string } | null>(null);
+
+  // Disable Smart Mode and AI Vision in offline mode
+  useEffect(() => {
+    if (offlineMode) {
+      setSmartModeEnabled(false);
+      setUseAIVision(false);
+    }
+  }, [offlineMode]);
 
   // Theme colors
   const theme = {
@@ -93,6 +101,10 @@ export function GestureRecognizer({ isDark = false }: { isDark?: boolean }) {
   const speakIfNotMuted = (text: string, options?: any) => {
     if (!audioMuted && audioUnlocked) {
       speak(text, options);
+      // Vibrate on mobile for tactile feedback
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate(50);
+      }
     }
   };
 
@@ -306,12 +318,20 @@ export function GestureRecognizer({ isDark = false }: { isDark?: boolean }) {
 
   // Unlock audio with user interaction
   const handleUnlockAudio = () => {
-    // Speak a silent utterance to unlock audio on mobile browsers
-    const utterance = new SpeechSynthesisUtterance('');
-    utterance.volume = 0;
-    if (!audioMuted && audioUnlocked) {
-      speechSynthesis.speak(utterance);
+    // Speak a very short audible utterance to reliably unlock audio
+    // (some browsers ignore empty/silent utterances)
+    const utterance = new SpeechSynthesisUtterance('Audio enabled');
+    // Keep volume very low so this unlock does not annoy the user
+    utterance.volume = 0.01;
+    // Ensure any suspended speech is resumed before speaking
+    try {
+      if (typeof speechSynthesis.resume === 'function') speechSynthesis.resume();
+    } catch (e) {
+      // ignore
     }
+    // Cancel any pending speech and speak the short utterance
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utterance);
     setAudioUnlocked(true);
     console.log('Audio unlocked');
   };
@@ -678,8 +698,8 @@ export function GestureRecognizer({ isDark = false }: { isDark?: boolean }) {
               {/* Language Selector */}
               <LanguageSelector onLanguageChange={setSelectedLanguage} isDark={isDark} />
               
-              {/* AI Vision Toggle - Only in Letter Mode */}
-              {isRunning && detectionMode === 'letter' && (
+              {/* AI Vision Toggle - Only in Letter Mode and NOT in offline mode */}
+              {isRunning && detectionMode === 'letter' && !offlineMode && (
                 <button
                   onClick={() => setUseAIVision(!useAIVision)}
                   className="group relative px-5 py-3 rounded-2xl font-semibold text-sm transition-all duration-300 overflow-hidden backdrop-blur-md"
@@ -707,8 +727,8 @@ export function GestureRecognizer({ isDark = false }: { isDark?: boolean }) {
                 </button>
               )}
               
-              {/* Smart Mode Toggle */}
-              {isRunning && (
+              {/* Smart Mode Toggle (disabled in offline mode) */}
+              {isRunning && !offlineMode && (
                 <SmartModeToggle 
                   enabled={smartModeEnabled} 
                   onToggle={setSmartModeEnabled}

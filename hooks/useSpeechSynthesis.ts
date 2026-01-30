@@ -54,6 +54,12 @@ export function useSpeechSynthesis() {
 
     // CRITICAL FIX: Wait for voices to load before speaking
     const speakNow = () => {
+      // Some browsers suspend audio; try to resume first
+      try {
+        if (typeof speechSynthesis.resume === 'function') speechSynthesis.resume();
+      } catch (e) {
+        // ignore
+      }
       // Cancel any ongoing speech
       speechSynthesis.cancel();
 
@@ -64,24 +70,31 @@ export function useSpeechSynthesis() {
       console.log('Available voices:', availableVoices.length);
       
       if (availableVoices.length > 0 && !options.voice) {
-        // If language specified, find voice for that language
+        // CRITICAL: Prioritize local voices for offline functionality
         if (options.lang) {
           const langPrefix = options.lang.split('-')[0]; // e.g., 'en' from 'en-US'
-          const langVoice = availableVoices.find(v => 
+          
+          // First try: Local voice for the language
+          const localLangVoice = availableVoices.find(v => 
             v.lang.startsWith(langPrefix) && v.localService
-          ) || availableVoices.find(v => 
+          );
+          
+          // Second try: Any voice for the language (may require internet)
+          const anyLangVoice = availableVoices.find(v => 
             v.lang.startsWith(langPrefix)
           );
           
-          if (langVoice) {
-            utterance.voice = langVoice;
-            console.log('Using language voice:', langVoice.name, langVoice.lang);
+          const selectedVoice = localLangVoice || anyLangVoice;
+          
+          if (selectedVoice) {
+            utterance.voice = selectedVoice;
+            console.log('Using voice:', selectedVoice.name, '(local:', selectedVoice.localService, ')');
           }
         } else {
-          // Prefer local voices for better reliability
+          // Prefer local voices for better offline reliability
           const localVoice = availableVoices.find(v => v.localService) || availableVoices[0];
           utterance.voice = localVoice;
-          console.log('Using voice:', localVoice.name);
+          console.log('Using default voice:', localVoice.name, '(local:', localVoice.localService, ')');
         }
       }
 

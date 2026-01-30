@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
+import { InstallPrompt } from "@/components/InstallPrompt";
+import { UpdateNotification } from "@/components/UpdateNotification";
 import "./globals.css";
 
 const inter = Inter({ 
@@ -17,14 +18,45 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: "SignLand - Real-Time Sign Language to Speech",
   description: "Privacy-first sign language to speech communication tool",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "SignLand",
+  },
   icons: {
     icon: [
       {
-        url: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🗣️</text></svg>",
-        type: "image/svg+xml",
+        url: "/favicon.ico",
+        sizes: "any",
+      },
+      {
+        url: "/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+    apple: [
+      {
+        url: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
       },
     ],
   },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: "#9333ea",
 };
 
 export default function RootLayout({
@@ -33,12 +65,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={`${inter.variable} ${manrope.variable} antialiased`}>
-          {children}
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en">
+      <head>
+        <meta name="theme-color" content="#9333ea" />
+      </head>
+      <body className={`${inter.variable} ${manrope.variable} antialiased`}>
+        {children}
+        <InstallPrompt />
+        <UpdateNotification />
+      </body>
+    </html>
   );
 }
