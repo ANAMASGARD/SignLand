@@ -27,10 +27,11 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Refine API error:', error);
+    console.error('Error details:', error.message, error.stack);
     return NextResponse.json(
-      { error: 'Failed to refine text' },
+      { error: 'Failed to refine text', details: error.message },
       { status: 500 }
     );
   }
