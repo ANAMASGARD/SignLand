@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     }
 
     // Call Gemini Vision
-    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     
     const prompt = `You are an expert in American Sign Language (ASL) alphabet recognition.
 
