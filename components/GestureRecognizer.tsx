@@ -607,7 +607,7 @@ export function GestureRecognizer({ isDark = false, offlineMode = false }: { isD
         }
       }
     }
-  }, [results, isRunning, audioUnlocked, lastSpokenGesture, speak, detectionMode, wordBuffer, sentenceBuffer, controlGestureHoldStart, currentControlGesture, selectedLanguage]);
+  }, [results, isRunning, audioUnlocked, audioMuted, lastSpokenGesture, speak, detectionMode, wordBuffer, sentenceBuffer, controlGestureHoldStart, currentControlGesture, selectedLanguage]);
 
   const isLoading = cameraLoading || mediapipeLoading;
   const error = cameraError || mediapipeError;
