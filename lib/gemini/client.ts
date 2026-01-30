@@ -39,7 +39,7 @@ export async function refineText(options: RefineTextOptions): Promise<RefineText
   const prompt = buildPrompt(tokens, context, language);
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const refined = response.text().trim();
