@@ -98,7 +98,7 @@ export function LandingHero() {
   return (
     <section
       ref={containerRef}
-      className="relative h-screen w-full overflow-hidden"
+      className="relative min-h-screen w-full overflow-x-hidden"
       style={{
         background: 'linear-gradient(135deg, #E8E4F3 0%, #D4C5F9 50%, #C5B8E8 100%)',
       }}
@@ -140,13 +140,13 @@ export function LandingHero() {
       </nav>
 
       {/* Main Content */}
-      <div className="relative z-10 h-full flex items-center">
-        <div className="w-full h-full flex flex-col lg:flex-row items-center px-8 lg:px-16">
+      <div className="relative z-10 min-h-screen flex items-center py-20 lg:py-0">
+        <div className="w-full flex flex-col lg:flex-row items-center px-8 lg:px-16 gap-8 lg:gap-0">
 
           {/* Left: 3D Robot - Same as before */}
           <div
             ref={robotContainerRef}
-            className="w-full lg:w-[55%] h-[45vh] lg:h-[70vh] relative flex items-center justify-center"
+            className="w-full lg:w-[55%] h-[40vh] lg:h-[70vh] relative flex items-center justify-center flex-shrink-0"
             style={{ marginTop: '2rem' }}
           >
             <div className="w-full h-full max-w-[700px] max-h-[700px]">
@@ -214,7 +214,7 @@ export function LandingHero() {
             </div>
 
             {/* Glass CTA Button - Interactive with Aceternity-style effects */}
-            <div ref={ctaRef} style={{ opacity: 0 }}>
+            <div ref={ctaRef} style={{ opacity: 0 }} className="pb-8 lg:pb-0">
               <div className="flex flex-col sm:flex-row gap-4">
                 <GlassButton href="/translate" size="lg">
                   Start Experience

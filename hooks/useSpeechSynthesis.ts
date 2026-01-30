@@ -67,42 +67,24 @@ export function useSpeechSynthesis() {
 
       // Try to use a specific voice if available
       const availableVoices = speechSynthesis.getVoices();
-      console.log('Available voices:', availableVoices.length);
       
       if (availableVoices.length > 0 && !options.voice) {
-        // CRITICAL: Prioritize local voices for offline functionality
         if (options.lang) {
-          const langPrefix = options.lang.split('-')[0]; // e.g., 'en' from 'en-US'
-          
-          // First try: Local voice for the language
-          const localLangVoice = availableVoices.find(v => 
-            v.lang.startsWith(langPrefix) && v.localService
-          );
-          
-          // Second try: Any voice for the language (may require internet)
-          const anyLangVoice = availableVoices.find(v => 
-            v.lang.startsWith(langPrefix)
-          );
-          
-          const selectedVoice = localLangVoice || anyLangVoice;
-          
-          if (selectedVoice) {
-            utterance.voice = selectedVoice;
-            console.log('Using voice:', selectedVoice.name, '(local:', selectedVoice.localService, ')');
+          const langPrefix = options.lang.split('-')[0];
+          const langVoice = availableVoices.find(v => v.lang.startsWith(langPrefix));
+          if (langVoice) {
+            utterance.voice = langVoice;
           }
         } else {
-          // Prefer local voices for better offline reliability
-          const localVoice = availableVoices.find(v => v.localService) || availableVoices[0];
-          utterance.voice = localVoice;
-          console.log('Using default voice:', localVoice.name, '(local:', localVoice.localService, ')');
+          utterance.voice = availableVoices[0];
         }
       }
 
-      // Apply options
+      // Apply options with DEFAULTS for better speech
       if (options.voice) utterance.voice = options.voice;
-      if (options.rate !== undefined) utterance.rate = options.rate;
-      if (options.pitch !== undefined) utterance.pitch = options.pitch;
-      if (options.volume !== undefined) utterance.volume = options.volume;
+      utterance.rate = options.rate !== undefined ? options.rate : 1.0;
+      utterance.pitch = options.pitch !== undefined ? options.pitch : 1.0;
+      utterance.volume = options.volume !== undefined ? options.volume : 1.0;
       if (options.lang) utterance.lang = options.lang;
 
       // Attach event handlers
