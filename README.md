@@ -6,6 +6,17 @@
 
 <div align="center">
 
+## 🎬 Watch SignLand in Action
+
+[![SignLand Demo Video](https://img.youtube.com/vi/qHxXyrspDHo/maxresdefault.jpg)](https://youtu.be/qHxXyrspDHo?si=um1uqTlR5CVblazU)
+
+**👆 Click the image above to watch the full demo video on YouTube**
+
+[![Watch Demo](https://img.shields.io/badge/▶_Watch_Demo-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/qHxXyrspDHo?si=um1uqTlR5CVblazU)
+[![Duration](https://img.shields.io/badge/Duration-3_Minutes-blue?style=for-the-badge)]() 
+
+---
+
 [![Hackathon](https://img.shields.io/badge/Dynamous-Kiro_CLI_Hackathon-purple?style=for-the-badge)](https://dynamous.com)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
@@ -46,6 +57,16 @@
 ## 🌟 What is SignLand?
 
 SignLand is a **privacy-first**, **real-time** web application that converts American Sign Language (ASL) into spoken audio. Using only a webcam and speakers, non-verbal individuals can communicate naturally without specialized hardware or continuous internet connectivity.
+
+### 📸 Screenshot
+
+<div align="center">
+
+![SignLand Landing Page - 3D Robot Assistant](./screenshots/landing-page.png)
+
+*Beautiful landing page with 3D AI robot assistant and modern glassmorphism design*
+
+</div>
 
 ### ✨ Key Highlights
 
@@ -97,7 +118,7 @@ SignLand is a **full-fledged Progressive Web App** that can be installed on your
 
 ## 🎥 Demo Video
 
-> **[Watch the 3-minute demo video](https://your-video-url.com)** to see SignLand in action!
+> **[🎬 Watch the 3-minute demo video on YouTube](https://youtu.be/qHxXyrspDHo?si=um1uqTlR5CVblazU)** to see SignLand in action!
 
 ---
 
@@ -658,7 +679,7 @@ This project is dedicated to the **deaf and mute community** worldwide. Your res
 
 - **Issues**: [GitHub Issues](https://github.com/ANAMASGARD/SignLand/issues)
 - **Documentation**: See [DEVLOG.md](DEVLOG.md) for development details
-- **Email**: [your-email@example.com]
+- **Email**: githublobsters1997@gmail.com
 
 ### Stay Updated
 
@@ -674,7 +695,7 @@ This project is dedicated to the **deaf and mute community** worldwide. Your res
 
 **Empowering communication, one gesture at a time.** 🗣️
 
-[Live Demo](https://your-deployment-url.vercel.app) • [Documentation](DEVLOG.md) • [Report Bug](https://github.com/ANAMASGARD/SignLand/issues) • [Request Feature](https://github.com/ANAMASGARD/SignLand/issues)
+[Live Demo](https://sign-land.vercel.app) • [Documentation](DEVLOG.md) • [Report Bug](https://github.com/ANAMASGARD/SignLand/issues) • [Request Feature](https://github.com/ANAMASGARD/SignLand/issues)
 
 </div>
 
